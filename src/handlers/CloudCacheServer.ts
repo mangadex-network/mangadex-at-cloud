@@ -45,6 +45,7 @@ export class CloudCacheServer {
                 const uri = this._rpc.getImageURL(ctx.request.url.pathname, origin);
                 console.log('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
+                console.log('OK, no fallback request required ...');
                 return;
             } catch(error) {}
         }
