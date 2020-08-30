@@ -48,7 +48,7 @@ export class CloudCacheServer {
         for(let origin of [ this._cdn, undefined ]) {
             try {
                 const uri = this._rpc.getImageURL(ctx.request.url.pathname, origin);
-                console.log('CloudCacheServer.handler()', '=>', uri.href);
+                //console.log('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
                 return;
             } catch(error) {}

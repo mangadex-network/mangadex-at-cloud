@@ -26,7 +26,7 @@ export class RequestValidator {
         if(this._verifyHost(ctx) && this._verifyReferer(ctx) && this._verifyPattern(ctx) && this._verifyToken(ctx)) {
             await next();
         } else {
-            console.log('BLOCKED:', ctx.request.ip, ctx.request.url);
+            //console.log('BLOCKED:', ctx.request.ip, ctx.request.url);
             ctx.response.status = 403;
             ctx.response.body = 'Forbidden';
         }

@@ -26,7 +26,6 @@ export class RemoteController implements IRemoteController {
     }
 
     public async disconnect() {
-        //console.log('MOCK >> RemoteController.disconnect()');
         let uri = new URL('/stop', this._configuration.controlServer);
         const request = new Request(uri.href, {
             method: 'POST',
@@ -36,10 +35,10 @@ export class RemoteController implements IRemoteController {
                 'Content-Type': 'application/json'
             }
         });
-        console.log('STOP', '=>', request);
+        //console.log('STOP', '=>', request);
         const response = await fetch(request);
-        let dbg = await response.json();
-        console.log('STOP', '<=', dbg);
+        //let dbg = await response.json();
+        //console.log('STOP', '<=', dbg);
         /*
         if(this._keepAliveTimer) {
             clearInterval(this._keepAliveTimer);
@@ -76,12 +75,12 @@ export class RemoteController implements IRemoteController {
                 'Content-Type': 'application/json'
             }
         });
-        console.log('PING', '=>', request);
+        //console.log('PING', '=>', request);
         const response = await fetch(request);
         let dbg = await response.json();
         console.log('PING', '<=', dbg);
         await this._configuration.parsePingResponsePayload(dbg);
-        console.log('CONFIG:', this._configuration.clientOptions);
+        //console.log('CONFIG:', this._configuration.clientOptions);
         return this._configuration.clientOptions;
     }
 
