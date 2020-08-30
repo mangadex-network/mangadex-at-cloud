@@ -35,6 +35,7 @@ export class ClientService implements IClientService {
         });
         this._service.addEventListener('error', event => {
             console.warn('Unexpected Error Occured:', event.error);
+            event.stopPropagation();
             //event.cancelBubble = true;
         });
         let options = await this._remoteController.connect();
