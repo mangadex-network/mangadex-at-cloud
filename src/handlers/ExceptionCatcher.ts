@@ -10,7 +10,7 @@ export class ExceptionCatcher {
         try {
             await next();
         } catch(error) {
-            //logger.error(error)
+            console.error('Unexpected error in middleware:', error);
             ctx.response.status = error.status || 500;
             ctx.response.body = error.message;
         }

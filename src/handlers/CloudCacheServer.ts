@@ -25,8 +25,8 @@ export class CloudCacheServer {
             ctx.response.headers.set('Content-Length', response.headers.get('Content-Length') || ''); // OR: ctx.response.headers.set('Transfer-Encoding', 'chunked');
             ctx.response.headers.set('Content-Type', response.headers.get('Content-Type') || '');
             //ctx.response.headers.set('Last-Modified', response.headers.get('Last-Modified'));
+            ctx.response.body = new Uint8Array(await response.arrayBuffer());
             ctx.response.status = response.status;
-            ctx.response.body = response.body;
         } else {
             throw new Error();
         }
