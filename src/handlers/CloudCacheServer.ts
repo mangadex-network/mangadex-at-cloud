@@ -28,6 +28,7 @@ export class CloudCacheServer {
             ctx.response.body = new Uint8Array(await response.arrayBuffer());
             ctx.response.status = response.status;
         } else {
+            console.log('>> Request Error:', response.ok, response.status);
             throw new Error();
         }
     }
