@@ -87,6 +87,6 @@ export class RemoteController implements IRemoteController {
 
     public getImageURL(pathname: string, origin?: string): URL {
         // TODO: strip off token from pathname ...
-        return new URL(pathname, origin || this._configuration.imageServer);
+        return new URL(pathname.replace(/.*\/data/, '/data'), origin || this._configuration.imageServer);
     }
 }
