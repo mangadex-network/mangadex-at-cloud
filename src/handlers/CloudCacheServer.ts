@@ -26,9 +26,13 @@ export class CloudCacheServer {
             ctx.response.headers.set('Content-Type', response.headers.get('Content-Type') || '');
             //ctx.response.headers.set('Last-Modified', response.headers.get('Last-Modified'));
             ctx.response.body = new Uint8Array(await response.arrayBuffer());
+            //response.body?.pipeThrough();
+            //response.body?.pipeTo();
             ctx.response.status = response.status;
         } else {
-            console.log('>> Request Error:', response.ok, response.status);
+            // TODO: consume data to free memory?
+            //response.arrayBuffer();
+            response.body?.cancel();
             throw new Error();
         }
     }
@@ -46,7 +50,6 @@ export class CloudCacheServer {
                 const uri = this._rpc.getImageURL(ctx.request.url.pathname, origin);
                 console.log('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
-                console.log('OK, no fallback request required ...');
                 return;
             } catch(error) {}
         }
