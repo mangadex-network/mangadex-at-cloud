@@ -40,12 +40,13 @@ export interface IRemoteControllerConfiguration {
 export class RemoteControllerConfiguration implements IRemoteControllerConfiguration {
 
     private readonly _secret: string;
-    private readonly _hostname: string = '0.0.0.0';
+    private readonly _interface: string = '0.0.0.0';
     private readonly _port: number;
     private readonly _diskspace: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
     private readonly _networkspeed: number;
     private readonly _controlServer: string = CONTROL_SERVER;
     private readonly _identifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by deno.land`;
+    private _hostname: string = 'localhost';
     private _imageServer: string = '';
     private _tlsCreationTime?: string;
     private _tlsCert: string = '';
@@ -61,7 +62,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     public get clientOptions(): ListenOptionsTls {
         return {
-            hostname: this._hostname,
+            hostname: this._interface, // this._hostname
             port: this._port,
             secure: true,
             certFile: this._tlsCert,
@@ -111,10 +112,12 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         if(data.latest_build > CLIENT_BUILD) {
             console.warn(`Your current client build ${CLIENT_BUILD} does not match the latest build ${data.latest_build}. Please check if an updated client is available!`);
         }
-        this._imageServer = data.image_server;
-        this._tokenKey = new Uint8Array(); //atob(data.token_key);
 
-        //let host = new URL(data.url);
+        const uri = new URL(data.url);
+        this._hostname = uri.hostname;
+        //this._port = parseInt(uri.port);
+        this._imageServer = data.image_server;
+        this._tokenKey = new Uint8Array(); // atob(data.token_key);
 
         if(data.tls) {
             this._tlsCreationTime = data.tls.created_at || this._tlsCreationTime;
