@@ -62,7 +62,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     public get clientOptions(): ListenOptionsTls {
         return {
-            hostname: this._hostname,
+            hostname: '0.0.0.0', // this._hostname,
             port: this._port,
             secure: true,
             certFile: this._tlsCert,
