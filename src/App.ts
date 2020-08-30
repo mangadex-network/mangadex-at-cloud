@@ -73,8 +73,7 @@ async function sigint(client: ClientService) {
 }
 
 (async function main() {
-    //Deno.signal => Deno.exit();
-    const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.shard * 1073741824, 0);
+    const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size * 1073741824, 0);
     const client = new ClientService(new RemoteController(configuration));
     sigint(client);
     await client.start(argv.cache);
