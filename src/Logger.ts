@@ -1,0 +1,1 @@
+// https://dev.to/trystansa/colors-for-console-log-with-deno-no4
