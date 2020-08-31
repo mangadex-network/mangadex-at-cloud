@@ -57,24 +57,23 @@ const argv: any = yargs(Deno.args)/*
     })
     .argv;
 
-async function sigint(client: ClientService) {
-    const sig = Deno.signal(Deno.Signal.SIGINT);
-    await sig;
-    sig.dispose();
-    console.log();
-    console.log('Stopping service ...');
-    const timeout = setTimeout(() => {
-        console.warn('Sopped forcefully');
-        Deno.exit();
-    }, 30000);
-    await client.stop(25000);
-    clearTimeout(timeout);
-    console.log('Stopped gracefully');
+async function onInterrupt(callback: () => Promise<void>, timeout: number) {
+    const sigint = Deno.signal(Deno.Signal.SIGINT);
+    await sigint;
+    sigint.dispose();
+    console.log(); // add newline after CTRL + C in terminal
+    console.log('Stopping application ...');
+    setTimeout(() => {
+        console.warn('Application was stopped forcefully!');
+        Deno.exit(1);
+    }, timeout);
+    await callback();
 }
 
 (async function main() {
     const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size * 1073741824, 0);
     const client = new ClientService(new RemoteController(configuration));
-    sigint(client);
+    onInterrupt(async () => client.stop(25000), 30000);
     await client.start(argv.cache);
+    Deno.exit();
 }());
