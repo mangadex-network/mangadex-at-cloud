@@ -75,7 +75,7 @@ export class RemoteController implements IRemoteController {
                 'Content-Type': 'application/json'
             }
         });
-        //console.log('PING', '=>', request);
+        console.log('PING', '=>', request);
         const response = await fetch(request);
         let dbg = await response.json();
         console.log('PING', '<=', dbg);
