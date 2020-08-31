@@ -11,23 +11,6 @@ export class CloudCacheServer {
         this._cdn = cdn;
     }
 
-    private async report(uri: URL) {
-        const content = {
-            url: uri.href,
-            success: true,
-            bytes: Math.trunc(Math.random() * 1024 * 1024 + 100000)
-        };
-        let response  = await fetch('https://api.mangadex.network/report', {
-            method: 'POST',
-            body: JSON.stringify(content),
-            headers: {
-                'Referer': 'https://mangadex.org/chapter',
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log('REPORT:', content, response.ok, response.status, await response.json());
-    }
-
     private async _proxy(ctx: Context<Record<string, any>>, uri: URL): Promise<void> {
         const request = new Request(uri.href, {
             headers: {
@@ -55,8 +38,6 @@ export class CloudCacheServer {
     }
 
     private async _handler(ctx: Context<Record<string, any>>, _: () => Promise<void>) {
-        this.report(ctx.request.url);
-        // TODO: get from RemoteControllerService.clientAgent
         ctx.response.headers.set('Server', this._rpc.identifier);
         ctx.response.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
         ctx.response.headers.set('Access-Control-Expose-Headers', '*');
