@@ -3,6 +3,7 @@ import { ExceptionCatcher } from "./handlers/ExceptionCatcher.ts";
 import { ResponseTimeDecorator } from "./handlers/ResponseTimeDecorator.ts";
 import { IRemoteController } from './RemoteController.ts';
 import { CloudCacheServer } from "./handlers/CloudCacheServer.ts";
+import { RequestValidator } from "./handlers/RequestValidator.ts";
 
 interface IClientService {
     start(cdn: string): Promise<void>;
@@ -29,6 +30,7 @@ export class ClientService implements IClientService {
     public async start(cdn: string) {
         this._service.use(new ExceptionCatcher().handler);
         this._service.use(new ResponseTimeDecorator().handler);
+        this._service.use(new RequestValidator().handler);
         this._service.use(new CloudCacheServer(this._remoteController, cdn).handler);
         this._service.addEventListener('listen', event => {
             console.log(`Started HTTPS Server ${event.hostname}:${event.port}`);
