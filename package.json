@@ -28,6 +28,7 @@
     "@types/koa": "latest",
     "@types/node": "latest",
     "@types/node-fetch": "latest",
+    "@types/yargs": "latest",
     "typescript": "latest"
   },
   "scripts": {
