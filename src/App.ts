@@ -65,7 +65,7 @@ async function onInterrupt(callback: () => Promise<void>, timeout: number) {
     await sigint;
     sigint.dispose();
     console.log(); // add newline after CTRL + C in terminal
-    console.log('Stopping application ...');
+    console.log(`Stopping application within the next ${(timeout/1000).toFixed(1)} seconds ...`);
     setTimeout(() => {
         console.warn('Application was stopped forcefully!');
         Deno.exit(1);
