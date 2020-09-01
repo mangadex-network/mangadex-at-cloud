@@ -1,8 +1,8 @@
-import { Context } from '../deps.ts';
+import { ParameterizedContext } from 'koa';
 
 export class ResponseTimeDecorator {
 
-    private async _handler(ctx: Context<Record<string, any>>, next: () => Promise<void>) {
+    private async _handler(ctx: ParameterizedContext, next: () => Promise<void>) {
         const start = Date.now();
         await next();
         const elapsed = Date.now() - start;

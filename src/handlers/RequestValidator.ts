@@ -1,4 +1,5 @@
-import { Context, ContextRequest } from '../deps.ts';
+import { URL } from 'url';
+import { ParameterizedContext, Request } from 'koa';
 
 export class RequestValidator {
 
@@ -22,19 +23,19 @@ export class RequestValidator {
         return token.length === 0 || token.length > 128;
     }
 
-    private _verify(request: ContextRequest): boolean {
-        return this._verifyHost(request.url.hostname)
+    private _verify(request: Request): boolean {
+        return this._verifyHost(request.URL.hostname)
             && this._verifyReferer(request.headers.get('referer'))
-            && this._verifyPattern(request.url.pathname)
-            && this._verifyToken(request.url.pathname);
+            && this._verifyPattern(request.URL.pathname)
+            && this._verifyToken(request.URL.pathname);
     }
 
-    private async _handler(ctx: Context<Record<string, any>>, next: () => Promise<void>) {
+    private async _handler(ctx: ParameterizedContext, next: () => Promise<void>) {
         if(this._verify(ctx.request)) {
-            console.info(`[REQUEST From: ${ctx.request.ip}]`, '<=', ctx.request.url.href);
+            console.info(`[REQUEST From: ${ctx.request.ip}]`, '<=', ctx.request.URL.href);
             await next();
         } else {
-            console.info(`[BLOCKED From: ${ctx.request.ip}]`, '<=', ctx.request.url.href, '@', ctx.request.headers.get('referer'));
+            console.info(`[BLOCKED From: ${ctx.request.ip}]`, '<=', ctx.request.URL.href, '@', ctx.request.headers.get('referer'));
             ctx.response.status = 403;
             ctx.response.body = 'Forbidden';
         }

@@ -1,11 +1,11 @@
 // parse commandline args
-import yargs from 'https://deno.land/x/yargs/deno.ts';
-import { ClientService } from './ClientService.ts'
-import { RemoteController } from './RemoteController.ts';
-import { RemoteControllerConfiguration } from './RemoteControllerConfiguration.ts';
-import { LogInit } from './Logger.ts';
+import * as yargs from 'yargs';
+import { ClientService } from './ClientService'
+import { RemoteController } from './RemoteController';
+import { RemoteControllerConfiguration } from './RemoteControllerConfiguration';
+import { LogInit } from './Logger';
 
-const argv: any = yargs(Deno.args)/*
+const argv = yargs/*
     .parserConfiguration({
         'duplicate-arguments-array': false
     })*/
@@ -54,22 +54,19 @@ const argv: any = yargs(Deno.args)/*
 LogInit(argv.loglevel);
 
 async function onInterrupt(callback: () => Promise<void>, timeout: number) {
-    const sigint = Deno.signal(Deno.Signal.SIGINT);
-    await sigint;
-    sigint.dispose();
     console.log(); // add newline after CTRL + C in terminal
     console.log(`Stopping application within the next ${(timeout/1000).toFixed(1)} seconds ...`);
     setTimeout(() => {
         console.warn('Application was stopped forcefully!');
-        Deno.exit(1);
-    }, timeout);
+        process.exit(1);
+    }, timeout).unref();
     await callback();
+    process.exit();
 }
 
 (async function main() {
     const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size * 1073741824, 0);
     const client = new ClientService(new RemoteController(configuration));
-    onInterrupt(async () => client.stop(25000), 30000);
+    process.on('SIGINT', () => onInterrupt(async () => client.stop(25000), 30000));
     await client.start(argv.cache);
-    Deno.exit();
 }());

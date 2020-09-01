@@ -46,7 +46,7 @@ export function LogInit(loglevel: LogLevel): void {
     console.trace = function(...params: unknown[]) {
         if(loglevel > 4) {
             //trace('\x1b[2m' + head('TRACE'), ...params, '\x1b[0m');
-            console.log('\x1b[2m' + head('TRACE'), ...params, new Error().stack?.replace(/error:/i, ''), '\x1b[0m');
+            console.log('\x1b[2m' + head('TRACE'), ...params, new Error().stack.replace(/error:/i, ''), '\x1b[0m');
         }
     }
 }

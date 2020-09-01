@@ -1,5 +1,7 @@
-import { Context } from '../deps.ts';
-import { IRemoteController } from '../RemoteController.ts';
+import { URL } from 'url';
+import { ParameterizedContext } from 'koa';
+import fetch, { Request } from 'node-fetch';
+import { IRemoteController } from '../RemoteController';
 
 export class CloudCacheServer {
 
@@ -11,7 +13,7 @@ export class CloudCacheServer {
         this._cloudCDN = cloudCDN;
     }
 
-    private async _proxy(ctx: Context<Record<string, any>>, uri: URL): Promise<void> {
+    private async _proxy(ctx: ParameterizedContext, uri: URL): Promise<void> {
         const request = new Request(uri.href, {
             headers: {
                 'X-Forwarded-For': ctx.request.ip,
@@ -31,13 +33,13 @@ export class CloudCacheServer {
             ctx.response.status = response.status;
         } else {
             // TODO: consume data to free memory?
-            //response.arrayBuffer();
-            response.body?.cancel();
+            response.arrayBuffer();
+            //response.body.cancel();
             throw new Error();
         }
     }
 
-    private async _handler(ctx: Context<Record<string, any>>, _: () => Promise<void>) {
+    private async _handler(ctx: ParameterizedContext, _: () => Promise<void>) {
         ctx.response.headers.set('Server', this._remoteController.identifier);
         ctx.response.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
         ctx.response.headers.set('Access-Control-Expose-Headers', '*');
@@ -46,7 +48,7 @@ export class CloudCacheServer {
         ctx.response.headers.set('X-Content-Type-Options', 'nosniff');
         for(let origin of [ this._cloudCDN, undefined ]) {
             try {
-                const uri = this._remoteController.getImageURL(ctx.request.url.pathname, origin);
+                const uri = this._remoteController.getImageURL(ctx.request.URL.pathname, origin);
                 console.debug('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
                 return;

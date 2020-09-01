@@ -1,8 +1,8 @@
-import { Context } from '../deps.ts';
+import { ParameterizedContext } from 'koa';
 
 export class ExceptionCatcher {
 
-    private async _handler(ctx: Context<Record<string, any>>, next: () => Promise<void>) {
+    private async _handler(ctx: ParameterizedContext, next: () => Promise<void>) {
         try {
             await next();
         } catch(error) {

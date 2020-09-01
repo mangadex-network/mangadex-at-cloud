@@ -1,9 +1,11 @@
-import { delay, Oak } from './deps.ts';
-import { ExceptionCatcher } from "./handlers/ExceptionCatcher.ts";
-import { ResponseTimeDecorator } from "./handlers/ResponseTimeDecorator.ts";
-import { IRemoteController } from './RemoteController.ts';
-import { CloudCacheServer } from "./handlers/CloudCacheServer.ts";
-import { RequestValidator } from "./handlers/RequestValidator.ts";
+import * as Koa from 'koa';
+import * as https from 'https';
+import { delay } from './deps';
+import { ExceptionCatcher } from './handlers/ExceptionCatcher';
+import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
+import { IRemoteController } from './RemoteController';
+import { CloudCacheServer } from './handlers/CloudCacheServer';
+import { RequestValidator } from './handlers/RequestValidator';
 
 interface IClientService {
     start(cdn: string): Promise<void>;
@@ -13,13 +15,12 @@ interface IClientService {
 export class ClientService implements IClientService {
 
     private readonly _remoteController: IRemoteController;
-    private readonly _service: Oak;
-    private _keepAliveTimer = 0;
-    private _serviceAbortController = new AbortController();
+    private _service: https.Server;
+    private _keepAliveTimer: NodeJS.Timeout;
 
     constructor(remoteController: IRemoteController) {
         this._remoteController = remoteController;
-        this._service = new Oak();
+        this._service
     }
 
     private async _keepAliveTask() {
@@ -32,26 +33,31 @@ export class ClientService implements IClientService {
     }
 
     public async start(cdn: string) {
-        this._service.use(new ExceptionCatcher().handler);
-        this._service.use(new ResponseTimeDecorator().handler);
-        this._service.use(new RequestValidator().handler);
-        this._service.use(new CloudCacheServer(this._remoteController, cdn).handler);
-        this._service.addEventListener('listen', event => {
-            console.log(`Started HTTPS Server ${event.hostname}:${event.port}`);
-        });
-        this._service.addEventListener('error', event => {
-            console.error('An unexpected Error occured within the Oak Framework:', event.error);
-            event.stopPropagation();
+        const app = new Koa();
+        app.silent = true;
+        app.use(new ExceptionCatcher().handler);
+        app.use(new ResponseTimeDecorator().handler);
+        app.use(new RequestValidator().handler);
+        app.use(new CloudCacheServer(this._remoteController, cdn).handler);
+        app.on('error', (error: any, ctx?: Koa.ParameterizedContext) => {
+            if (error.code === 'EPIPE' || error.code === 'ECONNRESET') {
+                console.warn(`Connection aborted by endpoint (${error.code})!`, ctx ? ctx.url : null);
+            } else {
+                console.error('An unexpected Error occured within the Koa Framework:', error);
+            }
         });
         let options = await this._remoteController.connect();
         this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
-        await this._service.listen({ ...options, signal: this._serviceAbortController.signal });
+        this._service = https.createServer(options, app.callback());
+        this._service.listen(options.port, options.hostname, () => {
+            console.log(`Started HTTPS Server ${options.hostname}:${options.port}`);
+        });
     }
 
     public async stop(wait: number) {
         clearInterval(this._keepAliveTimer);
         await this._remoteController.disconnect();
         await delay(wait);
-        this._serviceAbortController.abort();
+        this._service.close(error => {});
     }
 }

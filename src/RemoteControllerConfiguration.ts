@@ -1,4 +1,5 @@
-import { ListenOptionsTls } from './deps.ts';
+import { URL } from 'url';
+import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
 const CLIENT_VERSION = '1.2.2';
@@ -69,8 +70,8 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
             hostname: '0.0.0.0', // this._hostname,
             port: this._port,
             secure: true,
-            certFile: this._tlsCert,
-            keyFile: this._tlsKey
+            cert: this._tlsCert,
+            key: this._tlsKey
         }
     }
 
@@ -112,12 +113,6 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         return payload;
     }
 
-    private async _createTempFile(content: string): Promise<string> {
-        let file = await Deno.makeTempFile();
-        await Deno.writeTextFile(file, content);
-        return file;
-    }
-
     public async parsePingResponsePayload(data: IPingResponsePayload): Promise<void> {
         if(data.paused) {
             console.warn(`The client is marked as paused and will no longer receive requests! Check if the key has been changed and try restarting the client.`);
@@ -137,8 +132,8 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
         if(data.tls) {
             this._tlsCreationTime = data.tls.created_at || this._tlsCreationTime;
-            this._tlsCert = data.tls.certificate ? await this._createTempFile(data.tls.certificate) : this._tlsCert;
-            this._tlsKey = data.tls.private_key ? await this._createTempFile(data.tls.private_key) : this._tlsKey;
+            this._tlsCert = data.tls.certificate;
+            this._tlsKey = data.tls.private_key;
         }
     }
 }

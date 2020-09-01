@@ -1,5 +1,7 @@
-import { ListenOptionsTls } from './deps.ts';
-import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration.ts';
+import { URL } from 'url';
+import fetch, { Request } from 'node-fetch';
+import { ListenOptionsTls } from './deps';
+import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 
 export interface IRemoteController {
     readonly identifier: string;
