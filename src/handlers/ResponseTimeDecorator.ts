@@ -2,10 +2,6 @@ import { Context } from '../deps.ts';
 
 export class ResponseTimeDecorator {
 
-    constructor() {
-        //
-    }
-
     private async _handler(ctx: Context<Record<string, any>>, next: () => Promise<void>) {
         const start = Date.now();
         await next();
