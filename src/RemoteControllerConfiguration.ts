@@ -4,7 +4,11 @@ const CONTROL_SERVER = 'https://api.mangadex.network';
 const CLIENT_VERSION = '1.2.2';
 const CLIENT_BUILD = 19;
 
-interface IRequestPayload {
+interface IStopRequestPayload {
+    secret: string;
+}
+
+interface IPingRequestPayload {
     secret: string;
     port: number;
     disk_space: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
@@ -13,7 +17,7 @@ interface IRequestPayload {
     tls_created_at?: string;
 }
 
-interface IResponsePayload {
+interface IPingResponsePayload {
     paused: boolean;
     compromised: boolean;
     latest_build: number;
@@ -33,9 +37,9 @@ export interface IRemoteControllerConfiguration {
     readonly imageServer: string;
     readonly controlServer: string;
     readonly identifier: string;
-    createStopRequestPayload(): string;
-    createPingRequestPayload(): string;
-    parsePingResponsePayload(data: IResponsePayload): Promise<void>;
+    createStopRequestPayload(): IStopRequestPayload;
+    createPingRequestPayload(): IPingRequestPayload;
+    parsePingResponsePayload(data: IPingResponsePayload): Promise<void>;
 }
 
 export class RemoteControllerConfiguration implements IRemoteControllerConfiguration {
@@ -86,24 +90,26 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         return this._identifier;
     }
 
-    public createStopRequestPayload(): string {
-        return JSON.stringify({ secret: this._secret });
+    public createStopRequestPayload(): IStopRequestPayload {
+        return {
+            secret: this._secret
+        };
     }
 
-    public createPingRequestPayload(): string {
+    public createPingRequestPayload(): IPingRequestPayload {
         const payload = {
             secret: this._secret,
             port: this._port,
             disk_space: this._diskspace,
             network_speed: this._networkspeed,
             build_version: CLIENT_BUILD
-        } as IRequestPayload;
+        } as IPingRequestPayload;
 
         if(this._tlsCreationTime) {
             payload.tls_created_at = this._tlsCreationTime;
         }
 
-        return JSON.stringify(payload);
+        return payload;
     }
 
     private async _createTempFile(content: string): Promise<string> {
@@ -112,7 +118,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         return file;
     }
 
-    public async parsePingResponsePayload(data: IResponsePayload): Promise<void> {
+    public async parsePingResponsePayload(data: IPingResponsePayload): Promise<void> {
         if(data.paused) {
             console.warn(`The client is marked as paused and will no longer receive requests! Check if the key has been changed and try restarting the client.`);
         }

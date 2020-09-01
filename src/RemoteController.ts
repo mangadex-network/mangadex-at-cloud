@@ -27,34 +27,40 @@ export class RemoteController implements IRemoteController {
 
     public async disconnect() {
         let uri = new URL('/stop', this._configuration.controlServer);
+        const payload = this._configuration.createStopRequestPayload()
         const request = new Request(uri.href, {
             method: 'POST',
-            body: this._configuration.createStopRequestPayload(),
+            body: JSON.stringify(payload),
             headers: {
                 'User-Agent': this.identifier,
                 'Content-Type': 'application/json'
             }
         });
-        console.debug('RemoteController.disconnect()', '=>', request);
+        console.info('[REQUEST To: RPC]', '=>', request.url);
+        console.debug('RemoteController.disconnect()', '=>', request.method, request.url, payload);
         const response = await fetch(request);
         let data = await await response.json();
+        console.info('[RESPONSE From: RPC]', '<=', response.ok, response.status);
         console.debug('RemoteController.disconnect()', '<=', response.status, data);
     }
 
     public async ping(): Promise<ListenOptionsTls> {
         let uri = new URL('/ping', this._configuration.controlServer);
+        const payload = this._configuration.createPingRequestPayload();
         const request = new Request(uri.href, {
             method: 'POST',
-            body: this._configuration.createPingRequestPayload(),
+            body: JSON.stringify(payload),
             headers: {
                 'User-Agent': this.identifier,
                 'Content-Type': 'application/json'
             }
         });
-        console.debug('RemoteController.ping()', '=>', request);
+        console.info('[REQUEST To: RPC]', '=>', request.url);
+        console.debug('RemoteController.ping()', '=>', request.method, request.url, payload);
         const response = await fetch(request);
         let data = await response.json();
         await this._configuration.parsePingResponsePayload(data);
+        console.info('[RESPONSE From: RPC]', '<=', response.ok, response.status);
         console.debug('RemoteController.ping()', '<=', response.status, data);
         return this._configuration.clientOptions;
     }
