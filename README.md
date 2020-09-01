@@ -1,6 +1,6 @@
 # MangaDex@Cloud
 
-This is a Deno based reference implementation of the MangaDex@Home client.
+This is a NodeJS based reference implementation of the MangaDex@Home client.
 Instead of using a local disk for caching (as the official client does), this variant allows the usage of a cloud CDN (e.g. CloudFlare).
 As a result this client does not need a large and fast hard drive, but in exchange it requires higher bandwidth for all the outgoing requests to fetch the images from the CDN.
 
@@ -21,31 +21,25 @@ The basic idea is to setup a domain such as **cdn.mangadex-network.cf** and conf
 To join the **MangaDex@Home** network, you need to be a registered user with a [Client Key](https://mangadex.org/md_at_home/request) to operate a **MangaDex@Home** client.
 To run the application you need to install the following additional software:
 
-- [deno](https://deno.land/#installation)
+- [node + npm](https://nodejs.org/en/download/)
 
-### Run Online
+### Installation
 
-The application can be directly launched from the repositiory.
-The related packages will be downloaded into deno's cache.
+Install the application globally via NPM by running the command:
 ```bash
-deno run --allow-net --allow-read --allow-write --unstable 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/master/src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
-```
-**TIP:** The `master` part in the url may be replaced by any specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `v0.0.1-aplpha1`
-
-### Run Locally
-
-For convenience the application can be downloaded and wrapped into a named shell script.
-```bash
-deno install --allow-net --allow-read --allow-write --unstable --name mdath 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/master/src/App.ts'
-```
-**TIP:** The `master` part in the url may be replaced by any specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `v0.0.1-aplpha1`
-
-You may optionally add the deno directory to the environment path or create a symlink
-```bash
-ln -s /home/user/.deno/bin/mdath /usl/local/bin/mdath
+sudo npm install -g @mangadex/cloud
 ```
 
-To run the application use the name of the shell script
+### Updating
+
+If the application is already installed, it can be simply updated via NPM by running the command:
+```bash
+sudo npm update -g @mangadex/cloud
+```
+
+### Running
+
+To start the application the user needs to provide a valid client key, a port for communication and the URL to the CDN (which needs to be setup separately, e.g. CloudFlare) via commandline args.
 
 ```bash
 mdath --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
@@ -59,20 +53,9 @@ mdath --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size
 To start development you need to install the following additional software:
 
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [deno](https://deno.land/#installation)
+- [node + npm](https://nodejs.org/en/download/)
 
 Clone Repository:
 ```bash
 git clone 'https://github.com/mangadex-network/mangadex-at-cloud'
-```
-
-Run:
-```bash
-cd mangadex-at-cloud
-deno run --allow-all --unstable './src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
-```
-
-Bundle:
-```bash
-deno bundle './src/App.ts' [options ... ?]
 ```
