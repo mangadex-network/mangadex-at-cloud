@@ -11,7 +11,7 @@ const argv: any = yargs(Deno.args)/*
     })*/
     .scriptName('mdath')
     .usage('Usage: $0 [options]')
-    .example('$0 --key=xxxxxxxx --port=443 --cache=https://cdn.my-mangadex.domain', '')
+    .example('$0 --key=xxxxxxxx --port=443 --cache=https://cdn.mangadex.cache', '')
     .epilog('https://github.com/mangadex-network/mangadex-at-cloud')
     .help()
     .option('key', {
@@ -41,14 +41,7 @@ const argv: any = yargs(Deno.args)/*
         default: 512,
         type: 'number',
         nargs: 1
-    })/*
-    .option('data-saver', {
-        alias: 's',
-        describe: 'Enforces the MangaDex data-saver mode for all image requests. When set, only optimized images will be fetched from the CDN.',
-        default: false,
-        type: 'boolean',
-        nargs: 0
-    })*/
+    })
     .option('loglevel', {
         alias: 'l',
         describe: 'Log level (1: Error, 2: Warning, 3: Info, 4: Debug)',
