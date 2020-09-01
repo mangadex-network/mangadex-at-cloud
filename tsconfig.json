@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "types": [
+            "node"
+        ],
+        "strict": false,
+        "target": "esnext",
+        "module": "commonJS",
+        "outDir": "dist",
+        "rootDir": "src",
+        //"sourceMap": true,
+        "inlineSources": true,
+        "inlineSourceMap": true,
+        "removeComments": true,
+        "moduleResolution": "node"
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*_test.ts",
+        "**/*.test.ts",
+        "**/*_spec.ts",
+        "**/*.spec.ts",
+        "**/*_e2e.ts",
+        "**/*.e2e.ts"
+    ]
+}

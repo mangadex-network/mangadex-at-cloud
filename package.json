@@ -1,0 +1,40 @@
+{
+  "name": "@mangadex/cloud",
+  "description": "This is a NodeJS based custom implementation of the MangaDex@Home client.",
+  "version": "1.2.2-beta.14",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mangadex-network/mangadex-at-cloud"
+  },
+  "bin": {
+    "mdath": "./bin/cli"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/README",
+    "/UNLICENSE"
+  ],
+  "dependencies": {
+    "fs-extra": "^9.0.1",
+    "koa": "^2.13.0",
+    "node-fetch": "^2.6.0",
+    "tweetnacl": "^1.0.3",
+    "yargs": "^15.4.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "latest",
+    "@types/koa": "latest",
+    "@types/node": "latest",
+    "@types/node-fetch": "latest",
+    "typescript": "latest"
+  },
+  "scripts": {
+    "build:debug": "tsc",
+    "build:production": "rm -r -f ./dist && tsc --sourceMap false --inlineSources false --inlineSourceMap false",
+    "deploy": "npm run deploy:dry && node bump-version.js && npm publish --access public",
+    "deploy:dry": "npm install && npm run build:production && npm publish --dry-run --access public",
+    "start": "npm run build:debug && node ./bin/cli"
+  }
+}
