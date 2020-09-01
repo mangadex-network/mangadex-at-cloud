@@ -34,7 +34,7 @@ export class RequestValidator {
             console.info(`[REQUEST From: ${ctx.request.ip}]`, '<=', ctx.request.url.href);
             await next();
         } else {
-            console.info(`[BLOCKED From: ${ctx.request.ip}]`, '<=', ctx.request.url.href, '|', ctx.request.headers.get('referer'));
+            console.info(`[BLOCKED From: ${ctx.request.ip}]`, '<=', ctx.request.url.href, '@', ctx.request.headers.get('referer'));
             ctx.response.status = 403;
             ctx.response.body = 'Forbidden';
         }
