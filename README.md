@@ -18,6 +18,7 @@ The basic idea is to setup a domain such as **cdn.mangadex-network.cf** and conf
 
 ## Runtime
 
+To join the **MangaDex@Home** network, you need to be a registered user with a [Client Key](https://mangadex.org/md_at_home/request) to operate a **MangaDex@Home** client.
 To run the application you need to install the following additional software:
 
 - [deno](https://deno.land/#installation)
