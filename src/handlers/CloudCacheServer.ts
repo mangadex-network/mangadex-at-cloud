@@ -3,12 +3,12 @@ import { IRemoteController } from '../RemoteController.ts';
 
 export class CloudCacheServer {
 
-    private readonly _rpc: IRemoteController;
-    private readonly _cdn: string;
+    private readonly _remoteController: IRemoteController;
+    private readonly _cloudCDN: string;
 
-    constructor(rpc: IRemoteController, cdn: string) {
-        this._rpc = rpc;
-        this._cdn = cdn;
+    constructor(remoteController: IRemoteController, cloudCDN: string) {
+        this._remoteController = remoteController;
+        this._cloudCDN = cloudCDN;
     }
 
     private async _proxy(ctx: Context<Record<string, any>>, uri: URL): Promise<void> {
@@ -38,16 +38,16 @@ export class CloudCacheServer {
     }
 
     private async _handler(ctx: Context<Record<string, any>>, _: () => Promise<void>) {
-        ctx.response.headers.set('Server', this._rpc.identifier);
+        ctx.response.headers.set('Server', this._remoteController.identifier);
         ctx.response.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
         ctx.response.headers.set('Access-Control-Expose-Headers', '*');
         ctx.response.headers.set('Cache-Control', 'public/ max-age=1209600');
         ctx.response.headers.set('Timing-Allow-Origin', 'https://mangadex.org');
         ctx.response.headers.set('X-Content-Type-Options', 'nosniff');
-        for(let origin of [ this._cdn, undefined ]) {
+        for(let origin of [ this._cloudCDN, undefined ]) {
             try {
-                const uri = this._rpc.getImageURL(ctx.request.url.pathname, origin);
-                console.log('CloudCacheServer.handler()', '=>', uri.href);
+                const uri = this._remoteController.getImageURL(ctx.request.url.pathname, origin);
+                console.debug('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
                 return;
             } catch(error) {}
