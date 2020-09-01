@@ -3,6 +3,7 @@
         "types": [
             "node"
         ],
+        "lib": [ "esnext" ],
         "strict": false,
         "target": "esnext",
         "module": "commonJS",
