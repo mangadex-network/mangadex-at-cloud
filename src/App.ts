@@ -3,6 +3,7 @@ import yargs from 'https://deno.land/x/yargs/deno.ts';
 import { ClientService } from './ClientService.ts'
 import { RemoteController } from './RemoteController.ts';
 import { RemoteControllerConfiguration } from './RemoteControllerConfiguration.ts';
+import { LogInit } from './Logger.ts';
 
 const argv: any = yargs(Deno.args)/*
     .parserConfiguration({
@@ -50,12 +51,14 @@ const argv: any = yargs(Deno.args)/*
     })*/
     .option('loglevel', {
         alias: 'l',
-        describe: 'Log level (2: Error, 3: Warning, 4: Info, 6: Debug)',
-        default: 4,
+        describe: 'Log level (1: Error, 2: Warning, 3: Info, 4: Debug)',
+        default: 2,
         type: 'number',
         nargs: 1
     })
     .argv;
+
+LogInit(argv.loglevel);
 
 async function onInterrupt(callback: () => Promise<void>, timeout: number) {
     const sigint = Deno.signal(Deno.Signal.SIGINT);
