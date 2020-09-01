@@ -69,7 +69,7 @@ git clone 'https://github.com/mangadex-network/mangadex-at-cloud'
 Run:
 ```bash
 cd mangadex-at-cloud
-deno run --allow-net --allow-read --allow-write --unstable './src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
+deno run --allow-all --unstable './src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
 ```
 
 Bundle:
