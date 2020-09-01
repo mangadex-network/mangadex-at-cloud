@@ -23,21 +23,21 @@ export class RequestValidator {
         return token.length === 0 || token.length > 128;
     }
 
-    private _verify(request: Request): boolean {
-        return this._verifyHost(request.URL.hostname)
-            && this._verifyReferer(request.headers.get('referer'))
-            && this._verifyPattern(request.URL.pathname)
-            && this._verifyToken(request.URL.pathname);
+    private _verify(ctx: ParameterizedContext): boolean {
+        return this._verifyHost(ctx.URL.hostname)
+            && this._verifyReferer(ctx.headers.get('referer'))
+            && this._verifyPattern(ctx.URL.pathname)
+            && this._verifyToken(ctx.URL.pathname);
     }
 
     private async _handler(ctx: ParameterizedContext, next: () => Promise<void>) {
-        if(this._verify(ctx.request)) {
-            console.info(`[REQUEST From: ${ctx.request.ip}]`, '<=', ctx.request.URL.href);
+        if(this._verify(ctx)) {
+            console.info(`[REQUEST From: ${ctx.ip}]`, '<=', ctx.URL.href);
             await next();
         } else {
-            console.info(`[BLOCKED From: ${ctx.request.ip}]`, '<=', ctx.request.URL.href, '@', ctx.request.headers.get('referer'));
-            ctx.response.status = 403;
-            ctx.response.body = 'Forbidden';
+            console.info(`[BLOCKED From: ${ctx.ip}]`, '<=', ctx.URL.href, '@', ctx.headers.get('referer'));
+            ctx.status = 403;
+            ctx.body = 'Forbidden';
         }
     }
 

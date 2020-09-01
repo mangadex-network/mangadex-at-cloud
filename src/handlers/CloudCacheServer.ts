@@ -16,21 +16,21 @@ export class CloudCacheServer {
     private async _proxy(ctx: ParameterizedContext, uri: URL): Promise<void> {
         const request = new Request(uri.href, {
             headers: {
-                'X-Forwarded-For': ctx.request.ip,
-                'Forwarded': 'for=' + ctx.request.ip
+                'X-Forwarded-For': ctx.ip,
+                'Forwarded': 'for=' + ctx.ip
             }
         });
         const response = await fetch(request);
         if(response.ok && response.status === 200) {
-            ctx.response.headers.set('X-Cache-Lookup', response.headers.get('cf-cache-status') || 'MISS');
-            ctx.response.headers.set('X-Cache', response.headers.get('cf-cache-status') || 'MISS');
-            ctx.response.headers.set('Content-Length', response.headers.get('Content-Length') || ''); // OR: ctx.response.headers.set('Transfer-Encoding', 'chunked');
-            ctx.response.headers.set('Content-Type', response.headers.get('Content-Type') || '');
-            //ctx.response.headers.set('Last-Modified', response.headers.get('Last-Modified'));
-            ctx.response.body = new Uint8Array(await response.arrayBuffer());
+            ctx.headers.set('X-Cache-Lookup', response.headers.get('cf-cache-status') || 'MISS');
+            ctx.headers.set('X-Cache', response.headers.get('cf-cache-status') || 'MISS');
+            ctx.headers.set('Content-Length', response.headers.get('Content-Length') || ''); // OR: ctx.headers.set('Transfer-Encoding', 'chunked');
+            ctx.headers.set('Content-Type', response.headers.get('Content-Type') || '');
+            //ctx.headers.set('Last-Modified', response.headers.get('Last-Modified'));
+            ctx.body = new Uint8Array(await response.arrayBuffer());
             //response.body?.pipeThrough();
             //response.body?.pipeTo();
-            ctx.response.status = response.status;
+            ctx.status = response.status;
         } else {
             // TODO: consume data to free memory?
             response.arrayBuffer();
@@ -40,15 +40,15 @@ export class CloudCacheServer {
     }
 
     private async _handler(ctx: ParameterizedContext, _: () => Promise<void>) {
-        ctx.response.headers.set('Server', this._remoteController.identifier);
-        ctx.response.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
-        ctx.response.headers.set('Access-Control-Expose-Headers', '*');
-        ctx.response.headers.set('Cache-Control', 'public/ max-age=1209600');
-        ctx.response.headers.set('Timing-Allow-Origin', 'https://mangadex.org');
-        ctx.response.headers.set('X-Content-Type-Options', 'nosniff');
+        ctx.headers.set('Server', this._remoteController.identifier);
+        ctx.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
+        ctx.headers.set('Access-Control-Expose-Headers', '*');
+        ctx.headers.set('Cache-Control', 'public/ max-age=1209600');
+        ctx.headers.set('Timing-Allow-Origin', 'https://mangadex.org');
+        ctx.headers.set('X-Content-Type-Options', 'nosniff');
         for(let origin of [ this._cloudCDN, undefined ]) {
             try {
-                const uri = this._remoteController.getImageURL(ctx.request.URL.pathname, origin);
+                const uri = this._remoteController.getImageURL(ctx.URL.pathname, origin);
                 console.debug('CloudCacheServer.handler()', '=>', uri.href);
                 await this._proxy(ctx, uri);
                 return;
@@ -56,8 +56,8 @@ export class CloudCacheServer {
         }
         // '502 Bad Gateway - The server was acting as a gateway or proxy and received an invalid response from the upstream server';
         console.debug('CloudCacheServer.handler()', '=>', '502 - Bad Gateway');
-        ctx.response.body = 'Bad Gateway';
-        ctx.response.status = 502;
+        ctx.body = 'Bad Gateway';
+        ctx.status = 502;
     }
 
     public get handler() {
