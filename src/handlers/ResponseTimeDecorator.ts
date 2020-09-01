@@ -6,7 +6,7 @@ export class ResponseTimeDecorator {
         const start = Date.now();
         await next();
         const elapsed = Date.now() - start;
-        ctx.headers.set('X-Response-Time', elapsed + 'ms');
+        ctx.set('X-Response-Time', elapsed + 'ms');
     }
 
     public get handler() {

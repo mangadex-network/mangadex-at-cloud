@@ -25,7 +25,7 @@ export class RequestValidator {
 
     private _verify(ctx: ParameterizedContext): boolean {
         return this._verifyHost(ctx.URL.hostname)
-            && this._verifyReferer(ctx.headers.get('referer'))
+            && this._verifyReferer(ctx.get('referer'))
             && this._verifyPattern(ctx.URL.pathname)
             && this._verifyToken(ctx.URL.pathname);
     }
@@ -35,7 +35,7 @@ export class RequestValidator {
             console.info(`[REQUEST From: ${ctx.ip}]`, '<=', ctx.URL.href);
             await next();
         } else {
-            console.info(`[BLOCKED From: ${ctx.ip}]`, '<=', ctx.URL.href, '@', ctx.headers.get('referer'));
+            console.info(`[BLOCKED From: ${ctx.ip}]`, '<=', ctx.URL.href, '@', ctx.get('referer'));
             ctx.status = 403;
             ctx.body = 'Forbidden';
         }

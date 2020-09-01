@@ -22,11 +22,11 @@ export class CloudCacheServer {
         });
         const response = await fetch(request);
         if(response.ok && response.status === 200) {
-            ctx.headers.set('X-Cache-Lookup', response.headers.get('cf-cache-status') || 'MISS');
-            ctx.headers.set('X-Cache', response.headers.get('cf-cache-status') || 'MISS');
-            ctx.headers.set('Content-Length', response.headers.get('Content-Length') || ''); // OR: ctx.headers.set('Transfer-Encoding', 'chunked');
-            ctx.headers.set('Content-Type', response.headers.get('Content-Type') || '');
-            //ctx.headers.set('Last-Modified', response.headers.get('Last-Modified'));
+            ctx.set('X-Cache-Lookup', response.headers.get('cf-cache-status') || 'MISS');
+            ctx.set('X-Cache', response.headers.get('cf-cache-status') || 'MISS');
+            ctx.set('Content-Length', response.headers.get('Content-Length') || ''); // OR: ctx.set('Transfer-Encoding', 'chunked');
+            ctx.set('Content-Type', response.headers.get('Content-Type') || '');
+            //ctx.set('Last-Modified', response.headers.get('Last-Modified'));
             ctx.body = new Uint8Array(await response.arrayBuffer());
             //response.body?.pipeThrough();
             //response.body?.pipeTo();
@@ -40,12 +40,12 @@ export class CloudCacheServer {
     }
 
     private async _handler(ctx: ParameterizedContext, _: () => Promise<void>) {
-        ctx.headers.set('Server', this._remoteController.identifier);
-        ctx.headers.set('Access-Control-Allow-Origin', 'https://mangadex.org');
-        ctx.headers.set('Access-Control-Expose-Headers', '*');
-        ctx.headers.set('Cache-Control', 'public/ max-age=1209600');
-        ctx.headers.set('Timing-Allow-Origin', 'https://mangadex.org');
-        ctx.headers.set('X-Content-Type-Options', 'nosniff');
+        ctx.set('Server', this._remoteController.identifier);
+        ctx.set('Access-Control-Allow-Origin', 'https://mangadex.org');
+        ctx.set('Access-Control-Expose-Headers', '*');
+        ctx.set('Cache-Control', 'public/ max-age=1209600');
+        ctx.set('Timing-Allow-Origin', 'https://mangadex.org');
+        ctx.set('X-Content-Type-Options', 'nosniff');
         for(let origin of [ this._cloudCDN, undefined ]) {
             try {
                 const uri = this._remoteController.getImageURL(ctx.URL.pathname, origin);
