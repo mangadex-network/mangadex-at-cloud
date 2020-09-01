@@ -52,8 +52,10 @@ export class CloudCacheServer {
                 return;
             } catch(error) {}
         }
+        // '502 Bad Gateway - The server was acting as a gateway or proxy and received an invalid response from the upstream server';
+        console.debug('CloudCacheServer.handler()', '=>', '502 - Bad Gateway');
+        ctx.response.body = 'Bad Gateway';
         ctx.response.status = 502;
-        ctx.response.body = '502 Bad Gateway - The server was acting as a gateway or proxy and received an invalid response from the upstream server';
     }
 
     public get handler() {

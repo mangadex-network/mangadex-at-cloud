@@ -35,34 +35,10 @@ export class RemoteController implements IRemoteController {
                 'Content-Type': 'application/json'
             }
         });
-        //console.log('STOP', '=>', request);
+        console.debug('RemoteController.disconnect()', '=>', request);
         const response = await fetch(request);
-        //let dbg = await response.json();
-        //console.log('STOP', '<=', dbg);
-        /*
-        if(this._keepAliveTimer) {
-            clearInterval(this._keepAliveTimer);
-            this._keepAliveTimer = null;
-        }
-        let uri = new URL('/stop', CONTROL_SERVER_API_URL);
-        let payload = { 'secret': this._clientKey };
-        let request = new Request(uri.href, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-                'User-Agent': this.clientAgent,
-                'Content-Type': 'application/json'
-            }
-        });
-        logger.info('[REQUEST To: RPC]', '=>', request.url);
-        let response = await fetch(request);
-        let data = await response.text();
-        if(response.ok) {
-            logger.info('[RESPONSE From: RPC]', '<=', 'Successfully received confirmation for <stop> from control server');
-        } else {
-            throw new Error('Failed to receive confirmation for <stop> from control server!' + EOL + data);
-        }
-        */
+        let data = await await response.json();
+        console.debug('RemoteController.disconnect()', '<=', response.status, data);
     }
 
     public async ping(): Promise<ListenOptionsTls> {
@@ -75,17 +51,15 @@ export class RemoteController implements IRemoteController {
                 'Content-Type': 'application/json'
             }
         });
-        console.log('PING', '=>', request);
+        console.debug('RemoteController.ping()', '=>', request);
         const response = await fetch(request);
-        let dbg = await response.json();
-        console.log('PING', '<=', dbg);
-        await this._configuration.parsePingResponsePayload(dbg);
-        //console.log('CONFIG:', this._configuration.clientOptions);
+        let data = await response.json();
+        await this._configuration.parsePingResponsePayload(data);
+        console.debug('RemoteController.ping()', '<=', response.status, data);
         return this._configuration.clientOptions;
     }
 
     public getImageURL(pathname: string, origin?: string): URL {
-        // TODO: strip off token from pathname ...
         return new URL(pathname.replace(/.*\/data/, '/data'), origin || this._configuration.imageServer);
     }
 }
