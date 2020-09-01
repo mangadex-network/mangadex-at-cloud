@@ -23,8 +23,12 @@ export class ClientService implements IClientService {
     }
 
     private async _keepAliveTask() {
-        await this._remoteController.ping();
-        // TODO: update certificate when changed ...
+        try {
+            await this._remoteController.ping();
+            // TODO: update certificate when changed ...
+        } catch(error) {
+            console.warn('An unexpected Error occured during Configuration Update:', error);
+        }
     }
 
     public async start(cdn: string) {
