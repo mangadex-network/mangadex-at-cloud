@@ -36,9 +36,8 @@ export class ClientService implements IClientService {
             console.log(`Started HTTPS Server ${event.hostname}:${event.port}`);
         });
         this._service.addEventListener('error', event => {
-            console.warn('Unexpected Error Occured:', event.error);
+            console.error('An unexpected Error occured within the Oak Framework:', event.error);
             event.stopPropagation();
-            //event.cancelBubble = true;
         });
         let options = await this._remoteController.connect();
         this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
