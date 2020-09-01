@@ -8,7 +8,7 @@ interface IRequestPayload {
     secret: string;
     port: number;
     disk_space: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
-    network_speed: 0; // in ???, use 0 for unmetered (use server side maximum)
+    network_speed: 0; // in KB/sec, use 0 for unmetered (use server side maximum)
     build_version: number;
     tls_created_at?: string;
 }
