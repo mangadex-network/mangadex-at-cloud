@@ -10,6 +10,5 @@ Deno.test({
         testee.handler(null, async () => {
             throw new Error('');
         });
-        //console.log('OK');
     }
 });

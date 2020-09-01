@@ -9,6 +9,5 @@ Deno.test({
         let testee = new ResponseTimeDecorator();
         testee.handler(null, async () => await delay(50));
         //assertArrayContains(testee, [ 1, 2, 3, 4 ]);
-        //console.log('OK');
     }
 });
