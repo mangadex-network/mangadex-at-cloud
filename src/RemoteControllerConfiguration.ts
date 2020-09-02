@@ -49,7 +49,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private readonly _diskspace: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
     private readonly _networkspeed: number; // in KB/sec, use 0 for unmetered (use server side maximum)
     private readonly _controlServer: string = CONTROL_SERVER;
-    private readonly _identifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by deno.land`;
+    private readonly _identifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
     private _hostname: string = 'localhost';
     private _port: number;
     private _imageServer: string = '';
