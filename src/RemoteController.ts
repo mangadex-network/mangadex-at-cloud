@@ -1,5 +1,5 @@
 import { URL } from 'url';
-import fetch, { Request } from 'node-fetch';
+import fetch, { Request } from './node-fetch';
 import { ListenOptionsTls } from './deps';
 import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 

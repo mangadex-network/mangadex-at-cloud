@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { ParameterizedContext } from 'koa';
-import fetch, { Request } from 'node-fetch';
+import fetch, { Request } from '../node-fetch';
 import { IRemoteController } from '../RemoteController';
 
 export class CloudCacheServer {
@@ -33,7 +33,7 @@ export class CloudCacheServer {
             ctx.status = response.status;
         } else {
             // TODO: consume data to free memory?
-            response.arrayBuffer();
+            //response.arrayBuffer();
             //response.body.cancel();
             throw new Error();
         }
