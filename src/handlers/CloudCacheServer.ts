@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import { ParameterizedContext } from 'koa';
-import fetch, { Request } from '../node-fetch';
+import fetch, { Request } from 'node-fetch-lite';
 import { IRemoteController } from '../RemoteController';
 
 export class CloudCacheServer {
