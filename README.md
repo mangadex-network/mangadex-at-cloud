@@ -28,17 +28,17 @@ To run the application you need to install the following additional software:
 The application can be directly launched from the repositiory.
 The related packages will be downloaded into deno's cache.
 ```bash
-deno run --allow-net --allow-read --allow-write --unstable 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/master/src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
+deno run --allow-net --allow-read --allow-write --unstable 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/deno/src/App.ts' --key=xxxxxxxx --port=44300 --cache=https://cdn.mangadex-network.cf --size=512
 ```
-**TIP:** The `master` part in the url may be replaced by any specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `v0.0.1-aplpha1`
+**TIP:** The `/deno/` part in the url may be extended by a specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `/deno/v1.2.2-alpha.1/`
 
 ### Run Locally
 
 For convenience the application can be downloaded and wrapped into a named shell script.
 ```bash
-deno install --allow-net --allow-read --allow-write --unstable --name mdath 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/master/src/App.ts'
+deno install --allow-net --allow-read --allow-write --unstable --name mdath 'https://raw.githubusercontent.com/mangadex-network/mangadex-at-cloud/deno/src/App.ts'
 ```
-**TIP:** The `master` part in the url may be replaced by any specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `v0.0.1-aplpha1`
+**TIP:** The `/deno/` part in the url may be extended by a specific [version tag](https://github.com/mangadex-network/mangadex-at-cloud/tags), e.g. `/deno/v1.2.2-alpha.1/`
 
 You may optionally add the deno directory to the environment path or create a symlink
 ```bash
