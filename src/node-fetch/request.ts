@@ -1,7 +1,3 @@
-/***********************************************************************************************
- *** A very basic API compatible stub replacement for node-fetch, as node-fetch leaks memory ***
- ***********************************************************************************************/ 
-
 import { URL } from 'url';
 import * as http from 'http';
 import * as https from 'https';

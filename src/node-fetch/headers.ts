@@ -1,7 +1,3 @@
-/***********************************************************************************************
- *** A very basic API compatible stub replacement for node-fetch, as node-fetch leaks memory ***
- ***********************************************************************************************/ 
-
 export class Headers {
 
     private _headers: NodeJS.Dict<string | string[]>;
