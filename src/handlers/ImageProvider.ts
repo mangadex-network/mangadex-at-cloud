@@ -1,13 +1,21 @@
 import { URL } from 'url';
+import * as path from 'path';
+import * as fs from 'fs-extra';
+import * as crypto from 'crypto';
 import { ParameterizedContext } from 'koa';
 import fetch, { Request } from 'node-fetch-lite';
 import { IRemoteController } from '../RemoteController';
 
-export default function CreateImageProvider(remoteController: IRemoteController, cache: string, size: number): ImageProvider {
+export function CreateCacheProvider(remoteController: IRemoteController, cache: string, size: number): ImageProvider {
     if(/^https?:/.test(cache)) {
         return new CloudCacheImageProvider(remoteController, cache);
     }
-    console.warn(`No cache provider found for '${cache}', images will not be cached!`);
+    try {
+        fs.ensureDirSync(cache || null);
+        return new FileCacheImageProvider(remoteController, cache, size);
+    } catch(error) {}
+
+    console.warn(`The parameter '${cache}' is not valid for any of the supported cache providers, images will not be cached!`);
     return new ImageProvider(remoteController);
 }
 
@@ -99,9 +107,100 @@ class CloudCacheImageProvider extends ImageProvider {
     protected async _tryStreamResponseFromCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
         try {
             const uri = new URL(upstreamURI.pathname, this._originCDN);
-            console.debug('ImageProviderCloudCache._tryStreamResponseFromCache()', '=>', uri.href);
+            console.debug('CloudCacheImageProvider._tryStreamResponseFromCache()', '=>', uri.href);
             return this._tryStreamResponseFromURI(uri, ctx);
         } catch(error) {
+            return false;
+        }
+    }
+}
+
+const cacheShardNameLength: number = 2; // 16^2 shards
+const cacheFileNameLength: number = 24; // 16^24 possible files
+export class FileCacheImageProvider extends ImageProvider {
+
+    private readonly _cacheDirectory: string;
+    private readonly _cacheSize: number;
+    private readonly _leaseTime: number;
+
+    constructor(remoteController: IRemoteController, cacheDirectory: string, cacheSize: number, leaseTime: number = 2635200) {
+        super(remoteController);
+        this._cacheDirectory = cacheDirectory;
+        this._cacheSize = cacheSize;
+        this._leaseTime = leaseTime;
+        this._initializeCacheDirectory();
+    }
+
+    private _initializeCacheDirectory() {
+        for(let i = 0; i < Math.pow(16, cacheShardNameLength); i++) {
+            const shard = path.join(this._cacheDirectory, i.toString(16).padStart(cacheShardNameLength, '0'));
+            fs.ensureDir(shard);
+        }
+    }
+
+    private _getCacheFile(upstreamURI: URL): string {
+        let hash = crypto.createHash('sha1').update(upstreamURI.pathname).digest('hex');
+        return path.join(this._cacheDirectory, hash.slice(0, cacheShardNameLength), hash.slice(-cacheFileNameLength));
+    }
+
+    private _getMime(bytes: Buffer) {
+        const match = (value: number, index: number) => value === bytes[index];
+        if([ 0xFF, 0xD8, 0xFF       ].every(match)) { return 'image/jpeg'; }
+        if([ 0x52, 0x49, 0x46, 0x46 ].every(match)) { return 'image/webp'; }
+        if([ 0x89, 0x50, 0x4E, 0x47 ].every(match)) { return 'image/png'; }
+        if([ 0x47, 0x49, 0x46, 0x38 ].every(match)) { return 'image/gif'; }
+        if([ 0x42, 0x4D             ].every(match)) { return 'image/bmp'; }
+        return 'application/octet-stream';
+    }
+
+    protected async _tryStreamResponseFromCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
+        try {
+            const cacheFile = this._getCacheFile(upstreamURI);
+            console.debug('FileCacheImageProvider._tryStreamResponseFromCache()', '=>', cacheFile);
+            const fd = await fs.open(cacheFile, 'r');
+            //const stat = await fs.fstat(fd);
+            //ctx.set('Content-Length', stat.size.toString());
+            //ctx.set('Last-Modified', stat.mtime.toUTCString());
+            const signature = await fs.read(fd, Buffer.alloc(4), 0, 4, 0);
+            const sr = fs.createReadStream(null, { fd: fd, start: 0, highWaterMark: 262144 });
+            ctx.set('X-Cache', 'HIT');
+            ctx.set('X-Cache-Lookup', 'HIT');
+            ctx.set('Transfer-Encoding', 'chunked');
+            ctx.set('Content-Type', this._getMime(signature.buffer));
+            ctx.status = 200;
+            ctx.body = sr;
+            /********************************************************************
+            *** Non-piped solution, with competitive speed to piped solution ****
+            *********************************************************************
+            const buffer = await fs.readFile(cacheFile);
+            ctx.set('X-Cache', 'HIT');
+            ctx.set('X-Cache-Lookup', 'HIT');
+            ctx.set('Content-Type', this._getMime(buffer));
+            ctx.set('Content-Length', buffer.length.toString());
+            ctx.status = 200;
+            ctx.body = buffer;
+            ********************************************************************/
+            return true;
+        } catch(error) {
+            return false;
+        }
+    }
+
+    protected async _tryStreamResponseToCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
+        try {
+            const cacheFile = this._getCacheFile(upstreamURI);
+            console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', cacheFile);
+            if(ctx.status !== 200) {
+                throw new Error('Failed to cache response with status ' + ctx.status);
+            }
+            // NOTE: Force pause() on body stream to prevent pipe() from instantly starting consumption
+            //       Reason: Wait for Koa to pipe body to the res stream as well: ctx.body.pipe(ctx.res)
+            //       => https://github.com/koajs/koa/blob/master/lib/application.js#L267
+            ctx.body.pause();
+            ctx.body.pipe(fs.createWriteStream(cacheFile, { highWaterMark: 262144 }));
+            return true;
+        } catch(error) {
+            console.warn('FileCacheImageProvider._tryStreamResponseToCache()', error);
             return false;
         }
     }

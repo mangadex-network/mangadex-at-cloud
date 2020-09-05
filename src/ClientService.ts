@@ -4,7 +4,7 @@ import { delay } from './deps';
 import { ExceptionCatcher } from './handlers/ExceptionCatcher';
 import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
 import { RequestValidator } from './handlers/RequestValidator';
-import CreateImageProvider from './handlers/ImageProvider';
+import { CreateCacheProvider } from './handlers/ImageProvider';
 import { IRemoteController } from './RemoteController';
 
 interface IClientService {
@@ -38,7 +38,7 @@ export class ClientService implements IClientService {
         app.use(new ExceptionCatcher().handler);
         app.use(new ResponseTimeDecorator().handler);
         app.use(new RequestValidator().handler);
-        app.use(CreateImageProvider(this._remoteController, cache, size).handler);
+        app.use(CreateCacheProvider(this._remoteController, cache, size).handler);
         app.on('error', (error: any, ctx?: Koa.ParameterizedContext) => {
             if (error.code === 'EPIPE' || error.code === 'ECONNRESET') {
                 console.warn(`Connection aborted by endpoint (${error.code})!`, ctx ? ctx.url : null);
