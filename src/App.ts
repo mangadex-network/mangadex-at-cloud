@@ -1,4 +1,3 @@
-// parse commandline args
 import * as yargs from 'yargs';
 import { ClientService } from './ClientService'
 import { RemoteController } from './RemoteController';
