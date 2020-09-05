@@ -3,12 +3,12 @@ import * as https from 'https';
 import { delay } from './deps';
 import { ExceptionCatcher } from './handlers/ExceptionCatcher';
 import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
-import { IRemoteController } from './RemoteController';
-import { CloudCacheServer } from './handlers/CloudCacheServer';
 import { RequestValidator } from './handlers/RequestValidator';
+import CreateImageProvider from './handlers/ImageProvider';
+import { IRemoteController } from './RemoteController';
 
 interface IClientService {
-    start(cdn: string): Promise<void>;
+    start(cache: string, size: number): Promise<void>;
     stop(wait: number): Promise<void>;
 }
 
@@ -32,13 +32,13 @@ export class ClientService implements IClientService {
         }
     }
 
-    public async start(cdn: string) {
+    public async start(cache: string, size: number) {
         const app = new Koa();
         app.silent = true;
         app.use(new ExceptionCatcher().handler);
         app.use(new ResponseTimeDecorator().handler);
         app.use(new RequestValidator().handler);
-        app.use(new CloudCacheServer(this._remoteController, cdn).handler);
+        app.use(CreateImageProvider(this._remoteController, cache, size).handler);
         app.on('error', (error: any, ctx?: Koa.ParameterizedContext) => {
             if (error.code === 'EPIPE' || error.code === 'ECONNRESET') {
                 console.warn(`Connection aborted by endpoint (${error.code})!`, ctx ? ctx.url : null);

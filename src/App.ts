@@ -51,6 +51,7 @@ const argv = yargs/*
     })
     .argv;
 
+argv.size = argv.size * 1073741824;
 LogInit(argv.loglevel);
 
 async function onInterrupt(callback: () => Promise<void>, timeout: number) {
@@ -65,8 +66,8 @@ async function onInterrupt(callback: () => Promise<void>, timeout: number) {
 }
 
 (async function main() {
-    const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size * 1073741824, 0);
+    const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size, 0);
     const client = new ClientService(new RemoteController(configuration));
     process.on('SIGINT', () => onInterrupt(async () => client.stop(25000), 30000));
-    await client.start(argv.cache);
+    await client.start(argv.cache, argv.size);
 }());
