@@ -58,10 +58,10 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private _tlsKey: string = '';
     private _tokenKey?: Uint8Array;
 
-    constructor(secret: string, port: number, diskspace?: number, networkspeed?: number) {
+    constructor(secret: string, port: number, diskspace: number, networkspeed?: number) {
         this._secret = secret;
         this._port = port;
-        this._diskspace = diskspace || 1099511627776; // defaults to 1 TB
+        this._diskspace = Math.max(diskspace, 85899345920); // minimum => 80 GB
         this._networkspeed = networkspeed || 0;
     }
 
