@@ -115,27 +115,111 @@ class CloudCacheImageProvider extends ImageProvider {
     }
 }
 
+interface IShard {
+    ts: string;
+    entries: number;
+    size: number;
+}
+
+const cacheSafetySize: number = 2147483648;
+const cacheShardUpdateDelay: number = 1000; // [ms]
+const cacheShardIndexFileName: string = 'shards.json';
+const cacheShardStoreInterval: number = 60000; // [ms]
 const cacheShardNameLength: number = 2; // 16^2 shards
 const cacheFileNameLength: number = 24; // 16^24 possible files
+
+// Maybe place shard watching stuff into separate wroker thread?
 export class FileCacheImageProvider extends ImageProvider {
 
+    private _shardIndex: Map<string, IShard> = new Map();
+    private readonly _shardIndexFile: string;
     private readonly _cacheDirectory: string;
-    private readonly _cacheSize: number;
+    private readonly _cacheLimit: number;
     private readonly _leaseTime: number;
 
-    constructor(remoteController: IRemoteController, cacheDirectory: string, cacheSize: number, leaseTime: number = 2635200) {
+    constructor(remoteController: IRemoteController, cacheDirectory: string, cacheLimit: number, leaseTime: number = 2635200) {
         super(remoteController);
+        this._shardIndexFile = path.join(cacheDirectory, cacheShardIndexFileName);
         this._cacheDirectory = cacheDirectory;
-        this._cacheSize = cacheSize;
+        this._cacheLimit = cacheLimit;
         this._leaseTime = leaseTime;
-        this._initializeCacheDirectory();
+        this._startWatchingShards();
+        setInterval(this._storeShardIndex.bind(this), cacheShardStoreInterval).unref();
     }
 
-    private _initializeCacheDirectory() {
-        for(let i = 0; i < Math.pow(16, cacheShardNameLength); i++) {
-            const shard = path.join(this._cacheDirectory, i.toString(16).padStart(cacheShardNameLength, '0'));
-            fs.ensureDir(shard);
+    private * _getShardKeys(repeat: boolean = false): Generator<string, void, unknown> {
+        const shardCount = Math.pow(16, cacheShardNameLength);
+        for(let i = 0; i < shardCount; i++, repeat ? i %= shardCount : null) {
+            yield i.toString(16).padStart(cacheShardNameLength, '0');
         }
+    }
+
+    private async _initializeShardIndex(): Promise<void> {
+        try {
+            this._shardIndex = new Map(await fs.readJson(this._shardIndexFile));
+        } catch(error) {
+            console.warn(`Failed to load shard index from file '${this._shardIndexFile}':`, error);
+        }
+        for(let shard of this._getShardKeys()) {
+            fs.ensureDir(path.join(this._cacheDirectory, shard));
+            if(!this._shardIndex.has(shard)) {
+                this._shardIndex.set(shard, {
+                    ts: new Date().toISOString(),
+                    entries: -1,
+                    size: -1
+                });
+            }
+        }
+        console.info('Loaded shard index:', this._shardIndex.size, '@', this._cacheSize, '=>', this._shardIndexFile);
+    }
+
+    private async _storeShardIndex() {
+        try {
+            await fs.writeJson(this._shardIndexFile, [...this._shardIndex], { spaces: 2 });
+            console.info('Saved shard index:', this._shardIndex.size, '@', this._cacheSize, '=>', this._shardIndexFile);
+        } catch(error) {
+            console.warn(`Failed to save shard index to file '${this._shardIndexFile}':`, error);
+        }
+    }
+
+    private async _startWatchingShards() {
+        this._startWatchingShards = async () => console.warn(`The method 'FileCacheImageProvider._startWatchingShards()' can only be called once!`);
+        await this._initializeShardIndex();
+        for (let shard of this._getShardKeys(true)) {
+            await this._updateShard(shard);
+            // TODO: wait depending on file number of shard?
+            if(this._shardIndex.get(shard).entries > 0) {
+                await new Promise(resolve => setTimeout(resolve, cacheShardUpdateDelay));
+            }
+        }
+    }
+
+    private async _updateShard(shard: string): Promise<void> {
+        try {
+            let bytes = 0;
+            const directory = path.join(this._cacheDirectory, shard);
+            const entries = await fs.readdir(directory);
+            for(let entry of entries) {
+                bytes += (await fs.stat(path.join(directory, entry))).size;
+            }
+            this._shardIndex.set(shard, {
+                ts: new Date().toISOString(),
+                entries: entries.length,
+                size: bytes
+            });
+        } catch(error) {
+            console.warn(`Failed to update shard info for '${shard}':`, error);
+        }
+    }
+
+    private get _cacheSafety(): number {
+        return cacheSafetySize;
+    }
+
+    private get _cacheSize() {
+        const allShard = [...this._shardIndex.values()];
+        const validShards = allShard.filter(shard => shard.size > -1);
+        return validShards.reduce((accumulator, shard) => accumulator + shard.size, 0) * allShard.length / (validShards.length || 1);
     }
 
     private _getCacheFile(upstreamURI: URL): string {
@@ -188,6 +272,10 @@ export class FileCacheImageProvider extends ImageProvider {
 
     protected async _tryStreamResponseToCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
         try {
+            if(this._cacheSize + this._cacheSafety > this._cacheLimit) {
+                throw new Error(`Estimated cache size of ${this._cacheSize + this._cacheSafety} bytes exceeds the cache size limit of ${this._cacheLimit} bytes!`);
+            }
+            // validate hard disk free space
             const cacheFile = this._getCacheFile(upstreamURI);
             console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', cacheFile);
             if(ctx.status !== 200) {
