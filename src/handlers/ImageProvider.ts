@@ -143,8 +143,7 @@ export class FileCacheImageProvider extends ImageProvider {
         this._cacheDirectory = cacheDirectory;
         this._cacheLimit = cacheLimit;
         this._leaseTime = leaseTime;
-        this._startWatchingShards();
-        setInterval(this._storeShardIndex.bind(this), cacheShardStoreInterval).unref();
+        this._startWatchingShardsOnce();
     }
 
     private * _getShardKeys(repeat: boolean = false): Generator<string, void, unknown> {
@@ -182,8 +181,9 @@ export class FileCacheImageProvider extends ImageProvider {
         }
     }
 
-    private async _startWatchingShards() {
-        this._startWatchingShards = async () => console.warn(`The method 'FileCacheImageProvider._startWatchingShards()' can only be called once!`);
+    private async _startWatchingShardsOnce() {
+        this._startWatchingShardsOnce = async () => console.warn(`The method 'FileCacheImageProvider._startWatchingShards()' can only be called once!`);
+        setInterval(this._storeShardIndex.bind(this), cacheShardStoreInterval).unref();
         await this._initializeShardIndex();
         for (let shard of this._getShardKeys(true)) {
             await this._updateShard(shard);
@@ -242,6 +242,7 @@ export class FileCacheImageProvider extends ImageProvider {
             const cacheFile = this._getCacheFile(upstreamURI);
             console.debug('FileCacheImageProvider._tryStreamResponseFromCache()', '=>', cacheFile);
             const fd = await fs.open(cacheFile, 'r');
+            // TODO: update access time of file
             //const stat = await fs.fstat(fd);
             //ctx.set('Content-Length', stat.size.toString());
             //ctx.set('Last-Modified', stat.mtime.toUTCString());
