@@ -81,3 +81,22 @@ curl --insecure -H 'Host: localhost.mangadex.network' 'https://localhost:44300/d
 ```
 
 **TIP:** Consider that request validations for e.g. `Referer` or `Token` are still in place and can be tested as well
+
+## Live Performance
+
+The following screenshots provide some sample footage from an instance running on the mangadex network (including a maintenance restart)
+
+### MangaDex@Home Configuration
+![](https://i.imgur.com/vyfSpIM.png)
+
+### VPS Plan
+![](https://i.imgur.com/gFqSSq9.png)
+
+### VPS Statistics
+![](https://i.imgur.com/LDAYfIU.png)
+
+### Grafana Statistics
+![](https://i.imgur.com/t28rN6J.png)
+
+### Cloud CDN Statistics
+![](https://i.imgur.com/87PvmcH.png)
