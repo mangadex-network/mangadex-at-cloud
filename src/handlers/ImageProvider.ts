@@ -121,6 +121,7 @@ interface IShard {
     size: number;
 }
 
+const diskSafetySize: number = 4294967296;
 const cacheSafetySize: number = 2147483648;
 const cacheShardUpdateDelay: number = 1000; // [ms]
 const cacheShardIndexFileName: string = 'shards.json';
@@ -132,6 +133,7 @@ const cacheFileNameLength: number = 24; // 16^24 possible files
 export class FileCacheImageProvider extends ImageProvider {
 
     private _shardIndex: Map<string, IShard> = new Map();
+    private _freeDiskSpace: number = Number.MAX_SAFE_INTEGER;
     private readonly _shardIndexFile: string;
     private readonly _cacheDirectory: string;
     private readonly _cacheLimit: number;
@@ -183,6 +185,7 @@ export class FileCacheImageProvider extends ImageProvider {
 
     private async _startWatchingShardsOnce() {
         this._startWatchingShardsOnce = async () => console.warn(`The method 'FileCacheImageProvider._startWatchingShards()' can only be called once!`);
+        // TODO: start watching free disk space and update this._freeDiskSpace
         setInterval(this._storeShardIndex.bind(this), cacheShardStoreInterval).unref();
         await this._initializeShardIndex();
         for (let shard of this._getShardKeys(true)) {
@@ -273,15 +276,17 @@ export class FileCacheImageProvider extends ImageProvider {
 
     protected async _tryStreamResponseToCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
         try {
+            if(this._freeDiskSpace < diskSafetySize) {
+                throw new Error(`The available disk space of ${this._freeDiskSpace} bytes is running low!`);
+            }
             if(this._cacheSizeSafe > this._cacheLimit) {
                 throw new Error(`Estimated cache size of ${this._cacheSizeSafe} bytes exceeds the cache size limit of ${this._cacheLimit} bytes!`);
             }
-            // validate hard disk free space
-            const cacheFile = this._getCacheFile(upstreamURI);
-            console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', cacheFile);
             if(ctx.status !== 200) {
                 throw new Error('Failed to cache response with status ' + ctx.status);
             }
+            const cacheFile = this._getCacheFile(upstreamURI);
+            console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', cacheFile);
             // NOTE: Force pause() on body stream to prevent pipe() from instantly starting consumption
             //       Reason: Wait for Koa to pipe body to the res stream as well: ctx.body.pipe(ctx.res)
             //       => https://github.com/koajs/koa/blob/master/lib/application.js#L267
