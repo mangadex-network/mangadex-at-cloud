@@ -1,7 +1,7 @@
 {
   "name": "@mangadex/cloud",
   "description": "This is a NodeJS based custom implementation of the MangaDex@Home client.",
-  "version": "1.2.2-rc.0",
+  "version": "1.2.2-rc.1",
   "license": "Unlicense",
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
   "scripts": {
     "build:debug": "tsc",
     "build:production": "rm -r -f ./dist && tsc --sourceMap false --inlineSources false --inlineSourceMap false",
-    "test": "cd test && jest --color --config=jest.js",
+    "test": "cd test && jest --passWithNoTests --color --config=jest.js",
     "deploy": "npm run deploy:dry && node bump-version.js && npm publish --access public",
     "deploy:dry": "npm install && npm run build:production && npm run test && npm publish --dry-run --access public",
     "start": "npm run build:debug && node ./bin/cli",
