@@ -212,14 +212,14 @@ export class FileCacheImageProvider extends ImageProvider {
         }
     }
 
-    private get _cacheSafety(): number {
-        return cacheSafetySize;
-    }
-
     private get _cacheSize() {
         const allShard = [...this._shardIndex.values()];
         const validShards = allShard.filter(shard => shard.size > -1);
         return validShards.reduce((accumulator, shard) => accumulator + shard.size, 0) * allShard.length / (validShards.length || 1);
+    }
+
+    private get _cacheSizeSafe(): number {
+        return this._cacheSize + cacheSafetySize;
     }
 
     private _getCacheFile(upstreamURI: URL): string {
@@ -272,8 +272,8 @@ export class FileCacheImageProvider extends ImageProvider {
 
     protected async _tryStreamResponseToCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
         try {
-            if(this._cacheSize + this._cacheSafety > this._cacheLimit) {
-                throw new Error(`Estimated cache size of ${this._cacheSize + this._cacheSafety} bytes exceeds the cache size limit of ${this._cacheLimit} bytes!`);
+            if(this._cacheSizeSafe > this._cacheLimit) {
+                throw new Error(`Estimated cache size of ${this._cacheSizeSafe} bytes exceeds the cache size limit of ${this._cacheLimit} bytes!`);
             }
             // validate hard disk free space
             const cacheFile = this._getCacheFile(upstreamURI);
