@@ -10,8 +10,9 @@ const argv = yargs/*
     })*/
     .scriptName('mdath')
     .usage('Usage: $0 [options]')
-    .example('$0 --key=xxxxxxxx --port=443 --cache=https://cdn.mangadex.cache', '')
-    .epilog('https://github.com/mangadex-network/mangadex-at-cloud')
+    .example('$0 --key=xxxxxxxx --port=443 --cache=https://cdn.mangadex.cache', 'Run MangaDex@Cloud using a configured domain for caching images')
+    .example('$0 --key=xxxxxxxx --port=443 --cache=/var/lib/mangadex/cache --size=256', 'Run MangaDex@Cloud using a configured local directory for caching images')
+    .epilog('https://www.npmjs.com/package/@mangadex/cloud')
     .help()
     .option('key', {
         alias: 'k',
@@ -29,14 +30,14 @@ const argv = yargs/*
     })
     .option('cache', {
         alias: 'c',
-        describe: 'The origin of the CDN which is used to cache image requests. When no CDN is provided, the images will not be cached.',
+        describe: 'The origin of the CDN or the path to a local directory which shall be used to cache the image requests. When no cache is provided, the images will be directly passed through from the MangaDex image server.',
         default: 'https://s2.mangadex.org',
         type: 'string',
         nargs: 1
     })
     .option('size', {
         alias: 's',
-        describe: 'The size limit (in GB) that shall be cached by the CDN. The assignment of images is handled by the MangaDex network.',
+        describe: 'The size limit (in GB) that shall be assigned to the CDN or cached within the local directory. In case of using a CDN, the size limit only affects the server side number of assigned chapters (shards).',
         default: 512,
         type: 'number',
         nargs: 1
