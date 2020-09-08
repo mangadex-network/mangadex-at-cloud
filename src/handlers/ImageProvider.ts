@@ -289,7 +289,7 @@ export class FileCacheImageProvider extends ImageProvider {
             ctx.body.pipe(fs.createWriteStream(cacheFile, { highWaterMark: 262144 }));
             return true;
         } catch(error) {
-            console.warn('FileCacheImageProvider._tryStreamResponseToCache()', error);
+            console.warn(`Failed to cache '${upstreamURI.pathname}'!`, error);
             return false;
         }
     }
