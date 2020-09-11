@@ -3,7 +3,7 @@
 
 name: Continuous Delivery
 
-on: workflow_dispatch
+on: [workflow_dispatch]
 
 jobs:
   continuous-delivery:
