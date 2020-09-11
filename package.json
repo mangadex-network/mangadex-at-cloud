@@ -21,7 +21,7 @@
     "koa": "^2.13.0",
     "node-fetch-lite": "^0.1.1",
     "tweetnacl": "^1.0.3",
-    "yargs": "^15.4.1"
+    "yargs": "^16.0.3"
   },
   "devDependencies": {
     "@types/fs-extra": "latest",

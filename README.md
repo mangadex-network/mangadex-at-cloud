@@ -6,6 +6,10 @@ With this option the client does not need a large and fast hard drive, but requi
 
 This client is very convenient in combination with some cheap VPS providers such as Hetzner that are offering instances with very low disk space, but decent monthly bandwith quota (some providers even exclude the incoming data from the quota).
 
+[![](https://img.shields.io/npm/dm/@mangadex/cloud?color=informational&label=Downloads&logo=npm)](https://www.npmjs.com/package/@mangadex/cloud)
+[![](https://img.shields.io/github/workflow/status/mangadex-network/mangadex-at-cloud/Continuous%20Integration/node?label=CI-Workflow&logo=github)](https://github.com/mangadex-network/mangadex-at-cloud/actions?query=branch%3Anode)
+[![](https://img.shields.io/github/workflow/status/mangadex-network/mangadex-at-cloud/Continuous%20Delivery/node?label=CD-Workflow&logo=github)](https://www.npmjs.com/package/@mangadex/cloud)
+
 ----
 
 ## Cloud CDN
