@@ -2,12 +2,14 @@ import { URL } from 'url';
 import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
 import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
+import nacl = require('tweetnacl');
 
 export interface IRemoteController {
     connect(): Promise<ListenOptionsTls>;
     ping(): Promise<ListenOptionsTls>;
     disconnect(): Promise<void>;
     getImageURL(pathname: string, origin?: string): URL;
+    decryptToken(token: string): { expires: string, hash: string };
 }
 
 export class RemoteController implements IRemoteController {
@@ -64,5 +66,11 @@ export class RemoteController implements IRemoteController {
 
     public getImageURL(pathname: string): URL {
         return new URL(pathname.replace(/.*\/data/, '/data'), this._configuration.imageServer);
+    }
+
+    public decryptToken(token: string): { expires: string, hash: string } {
+        const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
+        const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
+        return JSON.parse(Buffer.from(decrypted).toString('utf8'));
     }
 }
