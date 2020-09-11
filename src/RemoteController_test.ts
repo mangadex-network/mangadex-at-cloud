@@ -70,7 +70,7 @@ describe('RemoteController', () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
             let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
-            expect(() => testee.decryptToken('x'.repeat(128))).toThrowError(/must be one of type/i);
+            expect(() => testee.decryptToken('x'.repeat(128))).toThrowError(/argument must be of type/i);
         });
     });
 });
