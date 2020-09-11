@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import { ParameterizedContext } from 'koa';
 import fetch, { Request } from 'node-fetch-lite';
 import { IRemoteController } from '../RemoteController';
+import { ClientIdentifier } from '../RemoteControllerConfiguration';
 
 export function CreateCacheProvider(remoteController: IRemoteController, cache: string, size: number): ImageProvider {
     if(/^https?:/.test(cache)) {
@@ -70,7 +71,7 @@ class ImageProvider {
     }
 
     private async _handler(ctx: ParameterizedContext, _next: () => Promise<void>) {
-        ctx.set('Server', this._remoteController.identifier);
+        ctx.set('Server', ClientIdentifier);
         ctx.set('Access-Control-Allow-Origin', 'https://mangadex.org');
         ctx.set('Access-Control-Expose-Headers', '*');
         ctx.set('Cache-Control', 'public/ max-age=1209600');

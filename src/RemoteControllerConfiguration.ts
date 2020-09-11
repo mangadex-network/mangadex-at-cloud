@@ -4,6 +4,7 @@ import { ListenOptionsTls } from './deps';
 const CONTROL_SERVER = 'https://api.mangadex.network';
 const CLIENT_VERSION = '1.2.2';
 const CLIENT_BUILD = 19;
+export const ClientIdentifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
 
 interface IStopRequestPayload {
     secret: string;
@@ -37,7 +38,6 @@ export interface IRemoteControllerConfiguration {
     readonly tokenKey?: Uint8Array;
     readonly imageServer: string;
     readonly controlServer: string;
-    readonly identifier: string;
     createStopRequestPayload(): IStopRequestPayload;
     createPingRequestPayload(): IPingRequestPayload;
     parsePingResponsePayload(data: IPingResponsePayload): Promise<void>;
@@ -49,7 +49,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private readonly _diskspace: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
     private readonly _networkspeed: number; // in KB/sec, use 0 for unmetered (use server side maximum)
     private readonly _controlServer: string = CONTROL_SERVER;
-    private readonly _identifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
+    
     private _hostname: string = 'localhost';
     private _port: number;
     private _imageServer: string = '';
@@ -85,10 +85,6 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     public get controlServer(): string {
         return this._controlServer;
-    }
-
-    public get identifier(): string {
-        return this._identifier;
     }
 
     public createStopRequestPayload(): IStopRequestPayload {

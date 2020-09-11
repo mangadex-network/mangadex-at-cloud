@@ -1,10 +1,9 @@
 import { URL } from 'url';
 import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
-import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
+import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 
 export interface IRemoteController {
-    readonly identifier: string;
     connect(): Promise<ListenOptionsTls>;
     ping(): Promise<ListenOptionsTls>;
     disconnect(): Promise<void>;
@@ -19,10 +18,6 @@ export class RemoteController implements IRemoteController {
         this._configuration = configuration;
     }
 
-    public get identifier(): string {
-        return this._configuration.identifier;
-    }
-
     public async connect(): Promise<ListenOptionsTls> {
         return this.ping();
     }
@@ -34,7 +29,7 @@ export class RemoteController implements IRemoteController {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: {
-                'User-Agent': this.identifier,
+                'User-Agent': ClientIdentifier,
                 'Content-Type': 'application/json'
             }
         });
@@ -53,7 +48,7 @@ export class RemoteController implements IRemoteController {
             method: 'POST',
             body: JSON.stringify(payload),
             headers: {
-                'User-Agent': this.identifier,
+                'User-Agent': ClientIdentifier,
                 'Content-Type': 'application/json'
             }
         });
