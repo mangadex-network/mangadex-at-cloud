@@ -7,8 +7,8 @@ With this option the client does not need a large and fast hard drive, but requi
 This client is very convenient in combination with some cheap VPS providers such as Hetzner that are offering instances with very low disk space, but decent monthly bandwith quota (some providers even exclude the incoming data from the quota).
 
 [![](https://img.shields.io/npm/dm/@mangadex/cloud?color=informational&label=Downloads&logo=npm)](https://www.npmjs.com/package/@mangadex/cloud)
-[![](https://img.shields.io/github/workflow/status/mangadex-network/mangadex-at-cloud/Continuous%20Integration/node?label=CI-Workflow&logo=github)](https://github.com/mangadex-network/mangadex-at-cloud/actions?query=branch%3Anode)
-[![](https://img.shields.io/github/workflow/status/mangadex-network/mangadex-at-cloud/Continuous%20Delivery/node?label=CD-Workflow&logo=github)](https://www.npmjs.com/package/@mangadex/cloud)
+[![](https://github.com/mangadex-network/mangadex-at-cloud/workflows/Continuous%20Integration/badge.svg?branch=node&event=push)](https://github.com/mangadex-network/mangadex-at-cloud/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Anode)
+[![](https://github.com/mangadex-network/mangadex-at-cloud/workflows/Continuous%20Delivery/badge.svg?branch=node&event=workflow_dispatch)](https://github.com/mangadex-network/mangadex-at-cloud/actions?query=workflow%3A%22Continuous+Delivery%22+branch%3Anode)
 
 ----
 
@@ -97,10 +97,10 @@ The following screenshots provide some sample footage from an instance running o
 ![](https://i.imgur.com/gFqSSq9.png)
 
 ### VPS Statistics
-![](https://i.imgur.com/LDAYfIU.png)
+![](https://i.imgur.com/G1sHUAb.png)
 
 ### Grafana Statistics
-![](https://i.imgur.com/t28rN6J.png)
+![](https://i.imgur.com/PjV5pUw.png)
 
 ### Cloud CDN Statistics
 ![](https://i.imgur.com/87PvmcH.png)
