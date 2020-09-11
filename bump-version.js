@@ -36,7 +36,7 @@ async function gitCommit(branch, version) {
     let mail = user + '@users.noreply.github.com';
     let auth = Buffer.from('x-access-token:' + process.env.GITHUB_TOKEN).toString('base64');
     await execute(`git add package*`);
-    await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Bump Version ${version} => Deploy'`);
+    await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Bump Version: ${version}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${branch}`);
 }
 
@@ -48,7 +48,7 @@ async function gitCommit(branch, version) {
         await gitCommit('node', version);
     } else {
         await execute(`git add package*`);
-        await execute(`git commit -m 'Bump Version ${version}'`);
+        await execute(`git commit -m 'Bump Version: ${version}'`);
         await execute(`git push`);
     }
 })();
