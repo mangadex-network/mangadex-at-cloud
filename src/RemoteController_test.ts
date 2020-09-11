@@ -1,6 +1,8 @@
 import { mock } from 'jest-mock-extended';
 import { RemoteController } from './RemoteController';
 import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
+import { LogInit, LogLevel } from './Logger';
+LogInit(LogLevel.None);
 
 describe('RemoteController', () => {
 
