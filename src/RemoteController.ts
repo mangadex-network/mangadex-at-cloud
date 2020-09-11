@@ -1,8 +1,8 @@
 import { URL } from 'url';
+import nacl = require('tweetnacl');
 import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
 import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
-import nacl = require('tweetnacl');
 
 export interface IRemoteController {
     connect(): Promise<ListenOptionsTls>;
