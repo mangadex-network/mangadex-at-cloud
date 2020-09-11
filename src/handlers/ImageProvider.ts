@@ -168,7 +168,7 @@ export class FileCacheImageProvider extends ImageProvider {
                 this._shardIndex.set(shard, {
                     ts: new Date().toISOString(),
                     entries: -1,
-                    size: -1
+                    size: 0
                 });
             }
         }
@@ -191,8 +191,8 @@ export class FileCacheImageProvider extends ImageProvider {
         await this._initializeShardIndex();
         for (let shard of this._getShardKeys(true)) {
             await this._updateShard(shard);
-            // TODO: wait depending on file number of shard?
             if(this._shardIndex.get(shard).entries > 0) {
+                // TODO: wait depending on file number of shard?
                 await new Promise(resolve => setTimeout(resolve, cacheShardUpdateDelay));
             }
         }
@@ -217,18 +217,23 @@ export class FileCacheImageProvider extends ImageProvider {
     }
 
     private get _cacheSize() {
-        const allShard = [...this._shardIndex.values()];
-        const validShards = allShard.filter(shard => shard.size > -1);
-        return validShards.reduce((accumulator, shard) => accumulator + shard.size, 0) * allShard.length / (validShards.length || 1);
+        const allShards = [...this._shardIndex.values()];
+        const validShards = allShards.filter(shard => shard.entries > -1);
+        return validShards.reduce((accumulator, shard) => accumulator + shard.size, 0) * allShards.length / (validShards.length || 1);
     }
 
     private get _cacheSizeSafe(): number {
         return this._cacheSize + cacheSafetySize;
     }
 
-    private _getCacheFile(upstreamURI: URL): string {
+    private _getIdentifier(upstreamURI: URL) {
         let hash = crypto.createHash('sha1').update(upstreamURI.pathname).digest('hex');
-        return path.join(this._cacheDirectory, hash.slice(0, cacheShardNameLength), hash.slice(-cacheFileNameLength));
+        const shard = hash.slice(0, cacheShardNameLength);
+        const file = hash.slice(-cacheFileNameLength);
+        return {
+            shard: shard,
+            path: path.join(this._cacheDirectory, shard, file)
+        };
     }
 
     private _getMime(bytes: Buffer) {
@@ -243,9 +248,9 @@ export class FileCacheImageProvider extends ImageProvider {
 
     protected async _tryStreamResponseFromCache(upstreamURI: URL, ctx: ParameterizedContext): Promise<boolean> {
         try {
-            const cacheFile = this._getCacheFile(upstreamURI);
-            console.debug('FileCacheImageProvider._tryStreamResponseFromCache()', '=>', cacheFile);
-            const fd = await fs.open(cacheFile, 'r');
+            const identifier = this._getIdentifier(upstreamURI);
+            console.debug('FileCacheImageProvider._tryStreamResponseFromCache()', '=>', identifier.path);
+            const fd = await fs.open(identifier.path, 'r');
             // TODO: update access time of file
             //const stat = await fs.fstat(fd);
             //ctx.set('Content-Length', stat.size.toString());
@@ -286,13 +291,20 @@ export class FileCacheImageProvider extends ImageProvider {
             if(ctx.status !== 200) {
                 throw new Error('Failed to cache response with status ' + ctx.status);
             }
-            const cacheFile = this._getCacheFile(upstreamURI);
-            console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', cacheFile);
+            const identifier = this._getIdentifier(upstreamURI);
+            console.debug('FileCacheImageProvider._tryStreamResponseToCache()', '<=', identifier.path);
             // NOTE: Force pause() on body stream to prevent pipe() from instantly starting consumption
             //       Reason: Wait for Koa to pipe body to the res stream as well: ctx.body.pipe(ctx.res)
             //       => https://github.com/koajs/koa/blob/master/lib/application.js#L267
             ctx.body.pause();
-            ctx.body.pipe(fs.createWriteStream(cacheFile, { highWaterMark: 262144 }));
+            ctx.body.pipe(fs.createWriteStream(identifier.path, { highWaterMark: 262144 }));
+            // immediately update shard size to bridge the gap until the next shard size update is performed
+            const shard = this._shardIndex.get(identifier.shard);
+            this._shardIndex.set(identifier.shard, {
+                ts: new Date().toISOString(),
+                entries: shard.entries > -1 ? shard.entries + 1 : 1,
+                size: shard.size + (ctx.length || 1048576) // reserve at least 1 MB fallback size for added image
+            });
             return true;
         } catch(error) {
             console.warn(`Failed to cache '${upstreamURI.pathname}'!`, error);
