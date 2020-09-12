@@ -88,7 +88,7 @@ curl --insecure -H 'Host: localhost.mangadex.network' 'https://localhost:44300/d
 
 ## Live Performance
 
-The following screenshots provide some sample footage from an instance running on the mangadex network (including a maintenance restart)
+The following screenshots provide some sample footage from an instance running on the mangadex network
 
 ### MangaDex@Home Configuration
 ![](https://i.imgur.com/vyfSpIM.png)
@@ -99,7 +99,7 @@ The following screenshots provide some sample footage from an instance running o
 ### VPS Statistics
 ![](https://i.imgur.com/G1sHUAb.png)
 
-### Grafana Statistics
+### MangaDex Network Statistics
 ![](https://i.imgur.com/PjV5pUw.png)
 
 ### Cloud CDN Statistics
