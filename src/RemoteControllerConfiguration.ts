@@ -19,7 +19,7 @@ interface IPingRequestPayload {
     tls_created_at?: string;
 }
 
-interface IPingResponsePayload {
+export interface IPingResponsePayload {
     paused: boolean;
     compromised: boolean;
     latest_build: number;
@@ -40,7 +40,7 @@ export interface IRemoteControllerConfiguration {
     readonly controlServer: string;
     createStopRequestPayload(): IStopRequestPayload;
     createPingRequestPayload(): IPingRequestPayload;
-    parsePingResponsePayload(data: IPingResponsePayload): Promise<void>;
+    parsePingResponsePayload(data: IPingResponsePayload): void;
 }
 
 export class RemoteControllerConfiguration implements IRemoteControllerConfiguration {
@@ -109,7 +109,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         return payload;
     }
 
-    public async parsePingResponsePayload(data: IPingResponsePayload): Promise<void> {
+    public parsePingResponsePayload(data: IPingResponsePayload): void {
         if(data.paused) {
             console.warn(`The client is marked as paused and will no longer receive requests! Check if the key has been changed and try restarting the client.`);
         }
@@ -124,7 +124,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         this._hostname = uri.hostname;
         this._port = parseInt(uri.port) || 443;
         this._imageServer = data.image_server;
-        this._tokenKey = new Uint8Array(32); // atob(data.token_key);
+        this._tokenKey = Buffer.from(data.token_key, 'base64') as Uint8Array;
 
         if(data.tls) {
             this._tlsCreationTime = data.tls.created_at || this._tlsCreationTime;
