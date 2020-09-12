@@ -37,7 +37,7 @@ export class ClientService implements IClientService {
         app.silent = true;
         app.use(new ExceptionCatcher().handler);
         app.use(new ResponseTimeDecorator().handler);
-        app.use(new RequestValidator().handler);
+        app.use(new RequestValidator(this._remoteController).handler);
         app.use(CreateCacheProvider(this._remoteController, cache, size).handler);
         app.on('error', (error: any, ctx?: Koa.ParameterizedContext) => {
             if (error.code === 'EPIPE' || error.code === 'ECONNRESET') {

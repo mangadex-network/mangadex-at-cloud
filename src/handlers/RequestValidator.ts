@@ -1,10 +1,17 @@
 import { URL } from 'url';
-import { ParameterizedContext, Request } from 'koa';
+import { ParameterizedContext } from 'koa';
+import { IRemoteController } from '../RemoteController';
+
+// => https://regex101.com/r/Ud3WDm/3
+const pathTestPattern = /^(?:\/[_\-=%a-zA-Z0-9]+)?\/data(?:-saver)?\/[a-fA-F0-9]+\/[^/?#\s]+$/;
 
 export class RequestValidator {
 
-    // => https://regex101.com/r/Ud3WDm/3
-    private static readonly _pathTestPattern = /^(?:\/[_\-=%a-zA-Z0-9]+)?\/data(?:-saver)?\/[a-fA-F0-9]+\/[^/?#\s]+$/;
+    private readonly _remoteController: IRemoteController;
+
+    constructor(remoteController: IRemoteController) {
+        this._remoteController = remoteController;
+    }
 
     private _verifyHost(hostname: string): boolean {
         return hostname.endsWith('.mangadex.network');
@@ -15,12 +22,22 @@ export class RequestValidator {
     }
 
     private _verifyPattern(pathname: string): boolean {
-        return RequestValidator._pathTestPattern.test(pathname);
+        return pathTestPattern.test(pathname);
     }
 
     private _verifyToken(pathname: string): boolean {
         const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
-        return token.length === 0 || token.length > 128;
+        if(token) {
+            try {
+                const data = this._remoteController.decryptToken(token);
+                const chapter = decodeURI(pathname.split('/').slice(-2).shift());
+                return new Date(data.expires) > new Date() && data.hash === chapter;
+            } catch(error) {
+                return false;
+            }
+        } else {
+            return true;
+        }
     }
 
     private _verify(ctx: ParameterizedContext): boolean {
