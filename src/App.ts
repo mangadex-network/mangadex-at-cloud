@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 import { ClientService } from './ClientService'
 import { RemoteController } from './RemoteController';
 import { RemoteControllerConfiguration } from './RemoteControllerConfiguration';
-import { LogInit } from './Logger';
+import { LogInit, LogLevel } from './Logger';
 
 const argv = yargs/*
     .parserConfiguration({
@@ -44,15 +44,20 @@ const argv = yargs/*
     })
     .option('loglevel', {
         alias: 'l',
-        describe: 'Log level (1: Error, 2: Warning, 3: Info, 4: Debug)',
-        default: 2,
-        type: 'number',
+        describe: 'Log level (error | warn | info | debug)',
+        default: 'warn',
+        type: 'string',
         nargs: 1
     })
     .argv;
 
 argv.size = argv.size * 1073741824;
-LogInit(argv.loglevel);
+LogInit({
+    error: LogLevel.Error,
+    warn: LogLevel.Warning,
+    info: LogLevel.Info,
+    debug: LogLevel.Debug
+}[argv.loglevel]);
 
 async function onInterrupt(callback: () => Promise<void>, timeout: number) {
     console.log(); // add newline after CTRL + C in terminal
