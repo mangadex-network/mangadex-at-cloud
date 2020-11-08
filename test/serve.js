@@ -7,7 +7,7 @@ const { LogInit } = require('../dist/Logger.js');
 LogInit(4);
 
 const cache = {
-    size: 64 * 1024 * 1024,
+    size: 8 * 1024 * 1024 * 1024,
     //location: ''
     location: './test/cache'
     //location: 'https://s5.mangadex.cf'
