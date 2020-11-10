@@ -43,6 +43,7 @@
     "deploy": "npm run deploy:dry && node bump-version.js && npm publish --access public",
     "deploy:dry": "npm install && npm run build:production && npm run test && npm publish --dry-run --access public",
     "start": "npm run build:debug && node ./bin/cli",
-    "serve": "npm run build:debug && node --inspect ./test/serve.js"
+    "serve": "npm run build:debug && node --inspect ./test/serve.js",
+    "cluster": "npm run build:debug && node --inspect ./test/cluster.js"
   }
 }
