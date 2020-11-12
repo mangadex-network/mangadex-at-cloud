@@ -25,8 +25,10 @@ export class ClientService implements IClientService {
 
     private async _keepAliveTask() {
         try {
-            await this._remoteController.ping();
+            const options = await this._remoteController.ping();
             // TODO: update certificate when changed ...
+            //this._service.setSecureContext(options);
+            //console.info('Updated client SSL certificate');
         } catch(error) {
             console.warn('An unexpected Error occured during Configuration Update:', error);
         }
