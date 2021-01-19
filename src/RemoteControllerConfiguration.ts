@@ -2,8 +2,8 @@ import { URL } from 'url';
 import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
-const CLIENT_VERSION = '1.2.2';
-const CLIENT_BUILD = 19;
+const CLIENT_VERSION = '1.2.4';
+const CLIENT_BUILD = 20;
 export const ClientIdentifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
 
 interface IStopRequestPayload {
