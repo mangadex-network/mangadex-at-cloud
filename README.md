@@ -88,6 +88,97 @@ curl --insecure -H 'Host: localhost.mangadex.network' 'https://localhost:44300/d
 
 **TIP:** Consider that request validations for e.g. `Referer` or `Token` are still in place and can be tested as well
 
+## Synthetic Benchmarks
+
+To access the performance and compare the application with other implementations, a synthetic benchmark was performed on the following cloud VPS:
+
+| System   |         |
+| -------- | ------- |
+| Provider | Hetzner |
+| Plan     | CPX41   |
+| vCPU     | 8x      |
+| RAM      | 16 GB   |
+
+As benchmark tool, siege was used with the following command and either 30 or 200 concurrent connections:
+
+`siege -c 30 -b -t 30s -H 'Host: localhost.mangadex.network' https://localhost:44300/data/8172a46adc798f4f4ace6663322a383e/B19.png`
+
+### Results in Non-Cluster Mode (Single Instance)
+`npm run serve`
+```bash
+** SIEGE 4.0.4
+** Preparing 30 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege...
+Transactions:                8392 hits
+Availability:              100.00 %
+Elapsed time:               29.47 secs
+Data transferred:         5480.17 MB
+Response time:               0.10 secs
+Transaction rate:          284.76 trans/sec
+Throughput:                185.96 MB/sec
+Concurrency:                29.56
+Successful transactions:     8392
+Failed transactions:            0
+Longest transaction:         1.42
+Shortest transaction:        0.03
+
+** SIEGE 4.0.4
+** Preparing 200 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege...
+Transactions:                8501 hits
+Availability:              100.00 %
+Elapsed time:               29.61 secs
+Data transferred:         5577.65 MB
+Response time:               0.65 secs
+Transaction rate:          287.10 trans/sec
+Throughput:                188.37 MB/sec
+Concurrency:               185.86
+Successful transactions:     8502
+Failed transactions:            0
+Longest transaction:         1.98
+Shortest transaction:        0.32
+```
+
+### Results in Cluster Mode (8 Workers)
+`npm run cluster`
+```bash
+** SIEGE 4.0.4
+** Preparing 30 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege...
+Transactions:               35292 hits
+Availability:              100.00 %
+Elapsed time:               29.60 secs
+Data transferred:        23152.97 MB
+Response time:               0.02 secs
+Transaction rate:         1192.30 trans/sec
+Throughput:                782.19 MB/sec
+Concurrency:                29.33
+Successful transactions:    35292
+Failed transactions:            0
+Longest transaction:         0.15
+Shortest transaction:        0.00
+
+** SIEGE 4.0.4
+** Preparing 200 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege...
+Transactions:               39536 hits
+Availability:              100.00 %
+Elapsed time:               29.78 secs
+Data transferred:        25940.48 MB
+Response time:               0.15 secs
+Transaction rate:         1327.60 trans/sec
+Throughput:                871.07 MB/sec
+Concurrency:               195.48
+Successful transactions:    39541
+Failed transactions:            0
+Longest transaction:         0.76
+Shortest transaction:        0.00
+```
+
 ## Live Performance
 
 The following screenshots provide some sample footage from an instance running on the mangadex network
