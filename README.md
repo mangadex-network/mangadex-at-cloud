@@ -1,5 +1,7 @@
 # MangaDex@Cloud
 
+**The blazing fast MangaDex@Home client**
+
 This is a NodeJS based reference implementation of the MangaDex@Home client.
 In additon to caching images on a local drive (as the official client does), this client also offers the ability to use a cloud CDN (e.g. CloudFlare).
 With this option the client does not need a large and fast hard drive, but requires higher bandwidth to deal with the incoming requests when fetching the images from the CDN.
