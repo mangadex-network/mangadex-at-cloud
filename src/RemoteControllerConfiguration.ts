@@ -2,8 +2,8 @@ import { URL } from 'url';
 import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
-const CLIENT_VERSION = '1.2.4';
-const CLIENT_BUILD = 20;
+const CLIENT_VERSION = '2.0.0-rc13'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
+const CLIENT_BUILD = 28; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
 export const ClientIdentifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
 
 interface IStopRequestPayload {
@@ -26,6 +26,7 @@ export interface IPingResponsePayload {
     image_server: string;
     url: string;
     token_key: string;
+    disable_tokens: boolean;
     tls?: {
         created_at: string;
         private_key: string;
@@ -36,6 +37,7 @@ export interface IPingResponsePayload {
 export interface IRemoteControllerConfiguration {
     readonly clientOptions: ListenOptionsTls;
     readonly tokenKey?: Uint8Array;
+    readonly tokenCheckEnabled: boolean;
     readonly imageServer: string;
     readonly controlServer: string;
     createStopRequestPayload(): IStopRequestPayload;
@@ -57,6 +59,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private _tlsCert: string = '';
     private _tlsKey: string = '';
     private _tokenKey?: Uint8Array;
+    private _tokenCheckEnabled: boolean;
 
     constructor(secret: string, port: number, diskspace: number, networkspeed?: number) {
         this._secret = secret;
@@ -77,6 +80,10 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     public get tokenKey(): Uint8Array | undefined {
         return this._tokenKey;
+    }
+
+    public get tokenCheckEnabled(): boolean {
+        return this._tokenCheckEnabled;
     }
 
     public get imageServer(): string {
@@ -125,6 +132,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         this._port = parseInt(uri.port) || 443;
         this._imageServer = data.image_server;
         this._tokenKey = Buffer.from(data.token_key, 'base64') as Uint8Array;
+        this._tokenCheckEnabled = !data.disable_tokens;
 
         if(data.tls) {
             this._tlsCreationTime = data.tls.created_at || this._tlsCreationTime;

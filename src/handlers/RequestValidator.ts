@@ -26,9 +26,9 @@ export class RequestValidator {
     }
 
     private _verifyToken(pathname: string): boolean {
-        const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
-        if(token) {
+        if(this._remoteController.shouldCheckToken(pathname)) {
             try {
+                const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
                 const data = this._remoteController.decryptToken(token);
                 const chapter = decodeURI(pathname.split('/').slice(-2).shift());
                 return new Date(data.expires) > new Date() && data.hash === chapter;

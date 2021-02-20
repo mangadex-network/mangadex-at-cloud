@@ -4,11 +4,18 @@ import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
 import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 
+// => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/server/ImageServer.kt
+const excludedTokenVerificationChapters = [
+    '/1b682e7b24ae7dbdc5064eeeb8e8e353/',
+    '/8172a46adc798f4f4ace6663322a383e/'
+];
+
 export interface IRemoteController {
     connect(): Promise<ListenOptionsTls>;
     ping(): Promise<ListenOptionsTls>;
     disconnect(): Promise<void>;
     getImageURL(pathname: string, origin?: string): URL;
+    shouldCheckToken(path: string): boolean;
     decryptToken(token: string): { expires: string, hash: string };
 }
 
@@ -66,6 +73,10 @@ export class RemoteController implements IRemoteController {
 
     public getImageURL(pathname: string): URL {
         return new URL(pathname.replace(/.*\/data/, '/data'), this._configuration.imageServer);
+    }
+
+    public shouldCheckToken(path: string): boolean {
+        return this._configuration.tokenCheckEnabled && !excludedTokenVerificationChapters.some(hash => path.includes(hash));
     }
 
     public decryptToken(token: string): { expires: string, hash: string } {

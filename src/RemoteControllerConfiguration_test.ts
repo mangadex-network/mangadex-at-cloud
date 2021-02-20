@@ -20,7 +20,7 @@ describe('RemoteControllerConfiguration', () => {
             expect(actual.disk_space).toBe(85_899_345_920); // spoofed min. disk space required by mangadex
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBeUndefined();
-            expect(actual.build_version).toBe(20);
+            expect(actual.build_version).toBe(28);
         });
 
         it('Should provide client configuration from ping response', async () => {
@@ -55,7 +55,7 @@ describe('RemoteControllerConfiguration', () => {
             expect(actual.disk_space).toBe(100_000_000_000);
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBe('TestTimeTLS');
-            expect(actual.build_version).toBe(20);
+            expect(actual.build_version).toBe(28);
         });
 
         it('Should create valid stop request', async () => {
@@ -85,6 +85,42 @@ describe('RemoteControllerConfiguration', () => {
 
             expect(testee.tokenKey.length).toBe(32);
             expect(testee.tokenKey.some(byte => byte > 0)).toBeFalsy();
+        });
+
+        it('Should enable token check when not in ping response', async () => {
+            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+
+            const successorMock = mock<IPingResponsePayload>();
+            successorMock.url = 'https://foo.bar.mangadex.network';
+            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+            successorMock.disable_tokens = undefined;
+            testee.parsePingResponsePayload(successorMock);
+
+            expect(testee.tokenCheckEnabled).toBe(true);
+        });
+
+        it('Should enable token check when not disabled in ping response', async () => {
+            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+
+            const successorMock = mock<IPingResponsePayload>();
+            successorMock.url = 'https://foo.bar.mangadex.network';
+            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+            successorMock.disable_tokens = false;
+            testee.parsePingResponsePayload(successorMock);
+
+            expect(testee.tokenCheckEnabled).toBe(true);
+        });
+
+        it('Should not enable token check when disabled in ping response', async () => {
+            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+
+            const successorMock = mock<IPingResponsePayload>();
+            successorMock.url = 'https://foo.bar.mangadex.network';
+            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
+            successorMock.disable_tokens = true;
+            testee.parsePingResponsePayload(successorMock);
+
+            expect(testee.tokenCheckEnabled).toBe(false);
         });
     });
 });

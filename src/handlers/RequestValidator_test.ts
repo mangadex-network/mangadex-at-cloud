@@ -13,7 +13,7 @@ describe('RemoteController', () => {
         it('Should accept valid requests (sunshine path)', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/${nacl.validToken}/data/af09/image.png`, 'https://mangadex.org');
-            let testee = fixture.createTestee({ expires: '3000-01-01T00:00:00.000Z', hash: 'af09' });
+            let testee = fixture.createTestee({ expires: '3000-01-01T00:00:00.000Z', hash: 'af09' }, true);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -22,10 +22,46 @@ describe('RemoteController', () => {
             expect(contextMock.body).toBe('OK');
         });
 
-        it('Should accept requests without token', async () => {
+        it('Should reject requests without token', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/af09/image.png`, 'https://mangadex.org');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, true);
+            await testee.handler(contextMock, async () => {
+                contextMock.status = 200;
+                contextMock.body = 'OK';
+            });
+            expect(contextMock.status).toBe(403);
+            expect(contextMock.body).toBe('Forbidden');
+        });
+
+        it('Should accept requests without token when token check is disabled', async () => {
+            const fixture = new TestFixture();
+            const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/af09/image.png`, 'https://mangadex.org');
+            let testee = fixture.createTestee(null, false);
+            await testee.handler(contextMock, async () => {
+                contextMock.status = 200;
+                contextMock.body = 'OK';
+            });
+            expect(contextMock.status).toBe(200);
+            expect(contextMock.body).toBe('OK');
+        });
+
+        it('Should accept requests with valid token when token check is disabled', async () => {
+            const fixture = new TestFixture();
+            const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/${nacl.validToken}/data/af09/image.png`, 'https://mangadex.org');
+            let testee = fixture.createTestee({ expires: '3000-01-01T00:00:00.000Z', hash: 'af09' }, false);
+            await testee.handler(contextMock, async () => {
+                contextMock.status = 200;
+                contextMock.body = 'OK';
+            });
+            expect(contextMock.status).toBe(200);
+            expect(contextMock.body).toBe('OK');
+        });
+
+        it('should accept requests with invalid token when token check is disabled', async () => {
+            const fixture = new TestFixture();
+            const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/${nacl.expiredToken}/data/af09/image.png`, 'https://mangadex.org');
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -37,7 +73,7 @@ describe('RemoteController', () => {
         it('Should reject requests from localhost', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://localhost:44300/data/af09/image.png`, 'https://mangadex.org');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -49,7 +85,7 @@ describe('RemoteController', () => {
         it('Should reject requests from invalid host', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.fun:44300/data/af09/image.png`, 'https://mangadex.org');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -61,7 +97,7 @@ describe('RemoteController', () => {
         it('Should accept requests with empty referer', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/af09/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -73,7 +109,7 @@ describe('RemoteController', () => {
         it('Should reject requests with invalid referer', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/af09/image.png`, 'https://mangadex.fun');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -85,7 +121,7 @@ describe('RemoteController', () => {
         it('Should reject requests with expired token', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/${nacl.expiredToken}/data/af09/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, true);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -97,7 +133,7 @@ describe('RemoteController', () => {
         it('Should reject requests with invalid token pattern', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/${nacl.validToken.replace('_', '~')}/data/af09/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, true);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -109,7 +145,7 @@ describe('RemoteController', () => {
         it('Should reject requests with invalid data pattern', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data-data/af09/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -121,7 +157,7 @@ describe('RemoteController', () => {
         it('Should reject requests with invalid chapter pattern', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/xxxxxxxx/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -133,7 +169,7 @@ describe('RemoteController', () => {
         it('Should reject requests with invalid image pattern', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/data/af09/image.png/800`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -145,7 +181,7 @@ describe('RemoteController', () => {
         it('Should reject requests with to many path segments', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/nonce/${nacl.validToken}/data/af09/image.png`, '');
-            let testee = fixture.createTestee(null);
+            let testee = fixture.createTestee(null, false);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
@@ -171,7 +207,8 @@ class TestFixture {
         return contextMock;
     }
 
-    public createTestee(decodedToken: { expires: string, hash: string }): RequestValidator {
+    public createTestee(decodedToken: { expires: string, hash: string }, checkToken: boolean): RequestValidator {
+        this.remoteControllerMock.shouldCheckToken.mockReturnValue(checkToken);
         this.remoteControllerMock.decryptToken.mockReturnValue(decodedToken);
         return new RequestValidator(this.remoteControllerMock);
     }
