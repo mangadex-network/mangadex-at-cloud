@@ -26,7 +26,7 @@
   "devDependencies": {
     "@types/fs-extra": "latest",
     "@types/jest": "latest",
-    "@types/koa": "^2.13.1",
+    "@types/koa": "^2.11.8",
     "@types/node": "latest",
     "@types/yargs": "latest",
     "jest": "latest",
