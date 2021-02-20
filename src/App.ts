@@ -1,4 +1,5 @@
 import * as yargs from 'yargs';
+import * as cluster from 'cluster';
 import { ClientService } from './ClientService'
 import { RemoteController } from './RemoteController';
 import { RemoteControllerConfiguration } from './RemoteControllerConfiguration';
@@ -11,7 +12,7 @@ const argv = yargs/*
     .scriptName('mdath')
     .usage('Usage: $0 [options]')
     .example('$0 --key=xxxxxxxx --port=443 --cache=https://cdn.mangadex.cache', 'Run MangaDex@Cloud using a configured domain for caching images')
-    .example('$0 --key=xxxxxxxx --port=443 --cache=/var/lib/mangadex/cache --size=256', 'Run MangaDex@Cloud using a configured local directory for caching images')
+    .example('$0 --key=xxxxxxxx --port=443 --cache=/var/lib/mangadex/cache --size=256', 'Run MangaDex@Cloud using a local directory for caching images')
     .epilog('https://www.npmjs.com/package/@mangadex/cloud')
     .help()
     .option('key', {
@@ -39,6 +40,13 @@ const argv = yargs/*
         alias: 's',
         describe: 'The size limit (in GB) that shall be assigned to the CDN or cached within the local directory. In case of using a CDN, the size limit only affects the server side number of assigned chapters (shards).',
         default: 512,
+        type: 'number',
+        nargs: 1
+    })
+    .option('workers', {
+        alias: 'w',
+        describe: 'The number of worker processes that should be spawned to handle requests and serve content from the cache. When using 0, a process will be spawned automatically for each CPU.',
+        default: 0,
         type: 'number',
         nargs: 1
     })
@@ -70,9 +78,46 @@ async function onInterrupt(callback: () => Promise<void>, timeout: number) {
     process.exit();
 }
 
+// TODO: run as cluster with workers ...
 (async function main() {
+    const clients = [];
     const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size, 0);
-    const client = new ClientService(new RemoteController(configuration));
-    process.on('SIGINT', () => onInterrupt(async () => client.stop(25000), 30000));
-    await client.start(argv.cache, argv.size);
+    const remote = new RemoteController(configuration);
+
+    if(cluster.isMaster) {
+        const options = await remote.connect();
+    
+        // stop all workers when receiving SIGINT
+        process.on('SIGINT', () => onInterrupt(async () => {
+            clearInterval(heartbeat);
+            workers.send('stop', 25000);
+        }, 30000));
+    
+        // update all workers when SSL cert changed
+        const heartbeat: NodeJS.Timeout = setInterval(async () => {
+            try {
+                const options = await remote.ping();
+                workers.send('update', options);
+                // TODO: update certificate when changed ...
+                //this._service.setSecureContext(options);
+                //console.info('Updated client SSL certificate');
+            } catch(error) {
+                console.warn('An unexpected Error occured during Configuration Update:', error);
+            }
+        }, 60000);
+    
+        // start all workers ...
+        worker.send('start', argv.cache, argv.size, options);
+        console.log('');
+    }
+    //if(cluster.isWorker || argv.workers < 2) {
+        const client = new ClientService(remote);
+        // wire up events to start/update/stop client with worker process messaging
+    //}
+
+    for(let i = 0; i < argv.workers; i++) {
+        const worker = cluster.fork();
+        worker.on(...);
+        // kill worker in 5~10 days to start a fresh one ...
+    }
 }());
