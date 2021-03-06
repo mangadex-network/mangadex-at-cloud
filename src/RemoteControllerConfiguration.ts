@@ -2,9 +2,9 @@ import { URL } from 'url';
 import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
-const CLIENT_VERSION = '2.0.0-rc13'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
-const CLIENT_BUILD = 28; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
-export const ClientIdentifier = `MangaDex@Cloud ${CLIENT_VERSION} (${CLIENT_BUILD}) - Powered by NodeJS`;
+const CLIENT_VERSION = '2.0.0-rc14'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
+const CLIENT_BUILD = 29; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
+export const ClientIdentifier = `MangaDex@Home Node ${CLIENT_VERSION} (${CLIENT_BUILD})`;
 
 interface IStopRequestPayload {
     secret: string;
