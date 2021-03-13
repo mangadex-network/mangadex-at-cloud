@@ -8,23 +8,24 @@ describe('RemoteControllerConfiguration', () => {
     describe('handler(...)', () => {
 
         it('Should provide control server', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
             expect(testee.controlServer).toBe('https://api.mangadex.network');
         });
 
         it('Should create valid initial ping request', async () => {
-            let testee = new RemoteControllerConfiguration('xxxxxxxx', 44300, 1_000_000_000, 10_000_000);
+            let testee = new RemoteControllerConfiguration('xxxxxxxx', '', 44300, 1_000_000_000, 10_000_000);
             let actual = testee.createPingRequestPayload();
             expect(actual.secret).toBe('xxxxxxxx');
+            expect(actual.ip_address).toBeUndefined();
             expect(actual.port).toBe(44300);
             expect(actual.disk_space).toBe(85_899_345_920); // spoofed min. disk space required by mangadex
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBeUndefined();
-            expect(actual.build_version).toBe(29);
+            expect(actual.build_version).toBe(30);
         });
 
         it('Should provide client configuration from ping response', async () => {
-            let testee = new RemoteControllerConfiguration('xxxxxxxx', 44300, 0, 0);
+            let testee = new RemoteControllerConfiguration('xxxxxxxx', '', 44300, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network';
@@ -41,7 +42,7 @@ describe('RemoteControllerConfiguration', () => {
         });
 
         it('Should create valid successive ping request', async () => {
-            let testee = new RemoteControllerConfiguration('xxxxxxxx', 443, 100_000_000_000, 10_000_000);
+            let testee = new RemoteControllerConfiguration('xxxxxxxx', '1.2.3.4', 443, 100_000_000_000, 10_000_000);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network:44300';
@@ -51,20 +52,21 @@ describe('RemoteControllerConfiguration', () => {
 
             let actual = testee.createPingRequestPayload();
             expect(actual.secret).toBe('xxxxxxxx');
+            expect(actual.ip_address).toBe('1.2.3.4');
             expect(actual.port).toBe(44300); // port from ping response replaced initial port
             expect(actual.disk_space).toBe(100_000_000_000);
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBe('TestTimeTLS');
-            expect(actual.build_version).toBe(29);
+            expect(actual.build_version).toBe(30);
         });
 
         it('Should create valid stop request', async () => {
-            let testee = new RemoteControllerConfiguration('xxxxxxxx', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('xxxxxxxx', '', 0, 0, 0);
             expect(testee.createStopRequestPayload().secret).toBe('xxxxxxxx');
         });
 
         it('Should provide image server from ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network:44300';
@@ -76,7 +78,7 @@ describe('RemoteControllerConfiguration', () => {
         });
 
         it('Should provide token key from ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network';
@@ -88,7 +90,7 @@ describe('RemoteControllerConfiguration', () => {
         });
 
         it('Should enable token check when not in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network';
@@ -100,7 +102,7 @@ describe('RemoteControllerConfiguration', () => {
         });
 
         it('Should enable token check when not disabled in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network';
@@ -112,7 +114,7 @@ describe('RemoteControllerConfiguration', () => {
         });
 
         it('Should not enable token check when disabled in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', 0, 0, 0);
+            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
 
             const successorMock = mock<IPingResponsePayload>();
             successorMock.url = 'https://foo.bar.mangadex.network';

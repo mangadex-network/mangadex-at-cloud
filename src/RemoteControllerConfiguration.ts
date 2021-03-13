@@ -12,6 +12,7 @@ interface IStopRequestPayload {
 
 interface IPingRequestPayload {
     secret: string;
+    ip_address?: string;
     port: number;
     disk_space: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
     network_speed: 0; // in KB/sec, use 0 for unmetered (use server side maximum)
@@ -49,11 +50,11 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     private readonly _secret: string;
     private readonly _diskspace: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
-    private readonly _networkspeed: number; // in KB/sec, use 0 for unmetered (use server side maximum)
+    private readonly _networkspeed: number; // in KB/sec, use 0 for unmetered (=> server side maximum)
     private readonly _controlServer: string = CONTROL_SERVER;
 
     private _hostname: string = 'localhost';
-    private _ip: string;
+    private _ip?: string;
     private _port: number;
     private _imageServer: string = '';
     private _tlsCreationTime?: string;
@@ -106,11 +107,14 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         const payload = {
             secret: this._secret,
             port: this._port,
-            ip_address: this._ip || null,
             disk_space: this._diskspace,
             network_speed: this._networkspeed,
             build_version: CLIENT_BUILD
         } as IPingRequestPayload;
+
+        if(this._ip) {
+            payload.ip_address = this._ip;
+        }
 
         if(this._tlsCreationTime) {
             payload.tls_created_at = this._tlsCreationTime;
