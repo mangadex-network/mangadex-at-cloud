@@ -27,105 +27,54 @@ describe('RemoteController', () => {
         });
     });
 
-    describe('decryptToken(...)', () => {
+    describe('verifyToken(...)', () => {
 
-        it('Should decrypt valid token', async () => {
+        it('Should accept valid token when token verification is enabled', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
             let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
-            const decrypted = testee.decryptToken(nacl.validToken);
-            expect(decrypted.expires).toBe('3000-01-01T00:00:00.000Z');
-            expect(decrypted.hash).toBe('af09');
+            expect(testee.verifyToken('af09', nacl.validToken)).toBe(true);
         });
 
-        it('Should decrypt expired token', async () => {
+        it('Should accept valid token when token verification is disabled', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
-            const decrypted = testee.decryptToken(nacl.expiredToken);
-            expect(decrypted.expires).toBe('2000-01-01T00:00:00.000Z');
-            expect(decrypted.hash).toBe('af09');
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, false);
+            expect(testee.verifyToken('af09', nacl.validToken)).toBe(true);
         });
 
-        it('Should throw when key null', async () => {
+        it('Should accept invalid token when token verification is disabled', async () => {
             const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, true);
-            expect(() => testee.decryptToken(nacl.validToken)).toThrowError(/unexpected type/i);
-        });
-
-        it('Should throw when key invalid', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', new Uint8Array([ 1, 2, 3, 4, 5, 6, 7, 8 ]), true);
-            expect(() => testee.decryptToken(nacl.validToken)).toThrowError(/bad key size/i);
-        });
-
-        it('Should throw when token null', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
-            expect(() => testee.decryptToken(null)).toThrowError(/cannot read property .* of null/i);
-        });
-
-        it('Should throw when token invalid', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
-            expect(() => testee.decryptToken('x'.repeat(128))).toThrowError(/argument must be of type/i);
-        });
-    });
-
-    describe('shouldCheckToken(...)', () => {
-
-        it('Should never check token for white-listed chapter', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, true);
-            expect(testee.shouldCheckToken(`/data/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/data-saver/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/token/data/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/token/data-saver/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data-saver/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data/chapter/image.png`)).toBe(true);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data-saver/chapter/image.png`)).toBe(true);
-        });
-
-        it('Should never check token for white-listed chapter', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, true);
-            expect(testee.shouldCheckToken(`/data/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/data/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/data-saver/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/data-saver/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token/data/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token//data/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token//data-saver/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token//data-saver/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data-saver/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data-saver/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data-saver/1b682e7b24ae7dbdc5064eeeb8e8e353/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data-saver/8172a46adc798f4f4ace6663322a383e/image.png`)).toBe(false);
-        });
-
-        it('Should never check token when disabled by remote controller', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
             let testee = fixture.createTestee('https://cdn.mangadex.org', null, false);
-            expect(testee.shouldCheckToken(`/data/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/data-saver/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token/data/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/token/data-saver/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.validToken}/data-saver/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data/chapter/image.png`)).toBe(false);
-            expect(testee.shouldCheckToken(`/${nacl.expiredToken}/data-saver/chapter/image.png`)).toBe(false);
+            expect(testee.verifyToken('', '')).toBe(true);
+        });
+
+        it('Should reject empty chapter hash', async () => {
+            const fixture = new TestFixture();
+            const nacl = new NaclMock();
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            expect(testee.verifyToken('', nacl.validToken)).toBe(false);
+        });
+
+        it('Should reject non-matching chapter hash', async () => {
+            const fixture = new TestFixture();
+            const nacl = new NaclMock();
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            expect(testee.verifyToken('09af', nacl.validToken)).toBe(false);
+        });
+
+        it('Should reject empty token', async () => {
+            const fixture = new TestFixture();
+            const nacl = new NaclMock();
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            expect(testee.verifyToken('af09', '')).toBe(false);
+        });
+
+        it('Should reject expired token', async () => {
+            const fixture = new TestFixture();
+            const nacl = new NaclMock();
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            expect(testee.verifyToken('af09', nacl.expiredToken)).toBe(false);
         });
     });
 });
@@ -134,10 +83,10 @@ class TestFixture {
 
     public readonly configurationMock = mock<IRemoteControllerConfiguration>();
 
-    public createTestee(imageServer: string, tokenKey: Uint8Array, checkToken: boolean): RemoteController {
+    public createTestee(imageServer: string, tokenKey: Uint8Array, tokenCheckEnabled: boolean): RemoteController {
         Object.defineProperty(this.configurationMock, 'imageServer', { get: () => imageServer });
         Object.defineProperty(this.configurationMock, 'tokenKey', { get: () => tokenKey });
-        Object.defineProperty(this.configurationMock, 'tokenCheckEnabled', { get: () => checkToken });
+        Object.defineProperty(this.configurationMock, 'tokenCheckEnabled', { get: () => tokenCheckEnabled });
         return new RemoteController(this.configurationMock);
     }
 }
