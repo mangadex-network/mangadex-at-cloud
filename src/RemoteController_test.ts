@@ -15,21 +15,21 @@ describe('RemoteController', () => {
 
     describe('connect(...)', () => {
 
-        it('Should send start payload', async () => {
+        it.skip('Should send start payload', async () => {
             //
         });
     });
 
     describe('disconnect(...)', () => {
 
-        it('Should send stop payload', async () => {
+        it.skip('Should send stop payload', async () => {
             //
         });
     });
 
     describe('on(cert, ...)', () => {
 
-        it('Should be raised when changed certificate', async () => {
+        it.skip('Should be raised when changed certificate', async () => {
             const fixture = new TestFixture();
             const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
 
@@ -44,7 +44,7 @@ describe('RemoteController', () => {
             expect(ticked).toBe(1);
         });
 
-        it('Should not be raised when same certificate', async () => {
+        it.skip('Should not be raised when same certificate', async () => {
             const fixture = new TestFixture();
             const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
 
@@ -62,7 +62,7 @@ describe('RemoteController', () => {
 
     describe('off(cert, ...)', () => {
 
-        it('Should not be raised when changed certificate', async () => {
+        it.skip('Should not be raised when changed certificate', async () => {
             const fixture = new TestFixture();
             const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
 
