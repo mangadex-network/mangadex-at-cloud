@@ -64,7 +64,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     constructor(secret: string, ip: string, port: number, diskspace: number, networkspeed: number) {
         this._secret = secret;
-        this._ip = ip || null;
+        this._ip = ip;
         this._port = port;
         this._diskspace = Math.max(diskspace, 85899345920); // minimum => 80 GB
         this._networkspeed = networkspeed || 0;
@@ -106,7 +106,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         const payload = {
             secret: this._secret,
             port: this._port,
-            ip_address: this._ip || '',
+            ip_address: this._ip || null,
             disk_space: this._diskspace,
             network_speed: this._networkspeed,
             build_version: CLIENT_BUILD
