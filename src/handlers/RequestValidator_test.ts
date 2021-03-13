@@ -72,16 +72,16 @@ describe('RemoteController', () => {
             expect(contextMock.body).toBe('Forbidden');
         });
 
-        it('Should reject requests with empty referer', async () => {
+        it('Should accept requests with empty referer', async () => {
             const fixture = new TestFixture();
             const contextMock = fixture.createParameterizedContext(`https://foo.bar.mangadex.network:44300/token/data/af09/image.png`, '');
-            let testee = fixture.createTestee(false);
+            let testee = fixture.createTestee(true);
             await testee.handler(contextMock, async () => {
                 contextMock.status = 200;
                 contextMock.body = 'OK';
             });
-            expect(contextMock.status).toBe(403);
-            expect(contextMock.body).toBe('Forbidden');
+            expect(contextMock.status).toBe(200);
+            expect(contextMock.body).toBe('OK');
         });
 
         it('Should reject requests with invalid referer', async () => {
