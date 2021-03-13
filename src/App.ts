@@ -49,6 +49,13 @@ const argv = yargs/*
         type: 'number',
         nargs: 1
     })
+    .option('throttle', {
+        alias: 't',
+        describe: 'The upload speed limit (in Mbit/s) of the client that shall be reported to the mangadex control server. When no upload speed limit is provided, the max. available bandwidth will be used.',
+        default: 0,
+        type: 'number',
+        nargs: 1
+    })
     .option('loglevel', {
         alias: 'l',
         describe: 'Log level (error | warn | info | debug)',
@@ -59,6 +66,7 @@ const argv = yargs/*
     .argv;
 
 argv.size = argv.size * 1073741824;
+argv.throttle = argv.throttle * 131072;
 LogInit({
     error: LogLevel.Error,
     warn: LogLevel.Warning,
