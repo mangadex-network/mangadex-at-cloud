@@ -21,9 +21,16 @@ const argv = yargs/*
         type: 'string',
         nargs: 1
     })
+    .option('ip', {
+        alias: 'h',
+        describe: 'The IP address reported to the mangadex control server to assign a .mangadex.network subdomain and forward image requests from the website. When no IP address is provided, the mangadex control server will use the client\'s public determined IP address.',
+        default: '',
+        type: 'string',
+        nargs: 1
+    })
     .option('port', {
         alias: 'p',
-        describe: 'The port on which the client will listen to incoming requests and serve the cached images.',
+        describe: 'The port on which the client will listen to incoming requests and serve the cached images. The port will also be reported to the mangadex control server to correctly forward image requests from the website.',
         default: 443,
         type: 'number',
         nargs: 1
