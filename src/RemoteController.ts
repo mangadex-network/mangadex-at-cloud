@@ -25,11 +25,13 @@ export interface IRemoteController {
 export class RemoteController extends EventEmitter implements IRemoteController, ITokenValidator, IUpstreamProvider {
 
     private readonly _configuration: IRemoteControllerConfiguration;
+    private readonly _keepAliveInterval: number;
     private _keepAliveTimer: NodeJS.Timeout = null;
 
-    constructor(configuration: IRemoteControllerConfiguration) {
+    constructor(configuration: IRemoteControllerConfiguration, keepAliveInterval?: number) {
         super();
         this._configuration = configuration;
+        this._keepAliveInterval = keepAliveInterval || 60000;
     }
 
     private async _keepAliveTask() {
@@ -48,7 +50,7 @@ export class RemoteController extends EventEmitter implements IRemoteController,
         if(this._keepAliveTimer) {
             console.warn('RemoteController.connect()', '=>', 'Cannot connect when already connected!');
         } else {
-            this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
+            this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), this._keepAliveInterval).unref();
             await this._ping();
             return this._configuration.clientOptions;
         }
