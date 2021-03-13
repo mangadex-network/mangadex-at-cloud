@@ -1,10 +1,12 @@
 # MangaDex@Cloud
 
-This is a NodeJS based reference implementation of the MangaDex@Home client.
-In additon to caching images on a local drive (as the official client does), this client also offers the ability to use a cloud CDN (e.g. CloudFlare).
+This is a lean and secure focused NodeJS based alternative to other MangaDex@Home clients.
+This client does not process or store any analytics, so it saves performance and honors the privacy of connecting users.
+Requests to common metric endpoints such as `/prometheus` or `/metrics` are blocked to prevent attacks or accidantely expose system data.
+In additon to the file based image caching on a local drive (as the official client does), this client also offers the ability to use a cloud CDN (e.g. CloudFlare).
 With this option the client does not need a large and fast hard drive, but requires higher bandwidth to deal with the incoming requests when fetching the images from the CDN.
 
-This client is very convenient in combination with some cheap VPS providers such as Hetzner that are offering instances with very low disk space, but decent monthly bandwith quota (some providers even exclude the incoming data from the quota).
+The cloud CDN mode is very convenient in combination with some cheap VPS providers such as Hetzner that are offering instances with very low disk space, but decent monthly bandwith quota (some providers even exclude the incoming data from the quota).
 
 [![](https://img.shields.io/npm/dm/@mangadex/cloud?color=informational&label=Downloads&logo=npm)](https://www.npmjs.com/package/@mangadex/cloud)
 [![](https://github.com/mangadex-network/mangadex-at-cloud/workflows/Continuous%20Integration/badge.svg?branch=node&event=push)](https://github.com/mangadex-network/mangadex-at-cloud/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Anode)
