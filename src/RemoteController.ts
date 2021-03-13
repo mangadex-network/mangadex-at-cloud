@@ -4,12 +4,6 @@ import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
 import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 
-// => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/server/ImageServer.kt
-const excludedTokenVerificationChapters = [
-    '/1b682e7b24ae7dbdc5064eeeb8e8e353/',
-    '/8172a46adc798f4f4ace6663322a383e/'
-];
-
 export interface ITokenValidator {
     verifyToken(pathname: string): boolean;
 }
@@ -105,10 +99,6 @@ export class RemoteController implements IRemoteController, ITokenValidator, IUp
         return new URL(pathname.replace(/.*\/data/, '/data'), this._configuration.imageServer);
     }
 
-    private _shouldCheckToken(path: string): boolean {
-        return this._configuration.tokenCheckEnabled && !excludedTokenVerificationChapters.some(hash => path.includes(hash));
-    }
-
     private _decryptToken(token: string): { expires: string, hash: string } {
         const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
         const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
@@ -116,7 +106,7 @@ export class RemoteController implements IRemoteController, ITokenValidator, IUp
     }
 
     public verifyToken(pathname: string): boolean {
-        if(this._shouldCheckToken(pathname)) {
+        if(this._configuration.tokenCheckEnabled) {
             try {
                 const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
                 const data = this._decryptToken(token);
