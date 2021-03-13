@@ -26,7 +26,6 @@ export class RemoteController extends EventEmitter implements IRemoteController,
 
     private readonly _configuration: IRemoteControllerConfiguration;
     private _keepAliveTimer: NodeJS.Timeout = null;
-    private _isConnected: boolean = false;
 
     constructor(configuration: IRemoteControllerConfiguration) {
         super();
@@ -46,10 +45,9 @@ export class RemoteController extends EventEmitter implements IRemoteController,
     }
 
     public async connect(): Promise<ListenOptionsTls> {
-        if(this._isConnected) {
+        if(this._keepAliveTimer) {
             console.warn('RemoteController.connect()', '=>', 'Cannot connect when already connected!');
         } else {
-            this._isConnected = true;
             this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
             await this._ping();
             return this._configuration.clientOptions;
@@ -57,11 +55,11 @@ export class RemoteController extends EventEmitter implements IRemoteController,
     }
 
     public async disconnect() {
-        if(!this._isConnected) {
+        if(!this._keepAliveTimer) {
             console.warn('RemoteController.disconnect()', '=>', 'Cannot disconnect when already disconnected!');
         } else {
-            this._isConnected = false;
             clearInterval(this._keepAliveTimer);
+            this._keepAliveTimer = null;
             let uri = new URL('/stop', this._configuration.controlServer);
             const payload = this._configuration.createStopRequestPayload()
             const request = new Request(uri.href, {
