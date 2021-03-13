@@ -1,10 +1,83 @@
 import { mock } from 'jest-mock-extended';
-import { RemoteController } from './RemoteController';
+import { delay } from './deps';
+import { RemoteController, EventType } from './RemoteController';
 import { IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 import { LogInit, LogLevel } from './Logger';
 LogInit(LogLevel.None);
 
+/*
+jest.mock('node-fetch-lite');
+import fetch from 'node-fetch-lite';
+const { Response } = jest.requireActual('node-fetch-lite');
+*/
+
 describe('RemoteController', () => {
+
+    describe('connect(...)', () => {
+
+        it('Should send start payload', async () => {
+            //
+        });
+    });
+
+    describe('disconnect(...)', () => {
+
+        it('Should send stop payload', async () => {
+            //
+        });
+    });
+
+    describe('on(cert, ...)', () => {
+
+        it('Should be raised when changed certificate', async () => {
+            const fixture = new TestFixture();
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+
+            // mock fetch to return a random cert on each request, e.g. Date.now().toString(16) or new Date().toISOString()
+            // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
+            await testee.connect();
+            let ticked = 0;
+            const callback = () => ticked++;
+            testee.on(EventType.CertificateChanged, callback);
+            await delay(40);
+
+            expect(ticked).toBe(1);
+        });
+
+        it('Should not be raised when same certificate', async () => {
+            const fixture = new TestFixture();
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+
+            // mock fetch to return the same cert on each request
+            // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
+            await testee.connect();
+            let ticked = 0;
+            const callback = () => ticked++;
+            testee.on(EventType.CertificateChanged, callback);
+            await delay(100);
+
+            expect(ticked).toBe(0);
+        });
+    });
+
+    describe('off(cert, ...)', () => {
+
+        it('Should not be raised when changed certificate', async () => {
+            const fixture = new TestFixture();
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+
+            // mock fetch to return a random cert on each request, e.g. Date.now().toString(16) or new Date().toISOString()
+            // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
+            await testee.connect();
+            let ticked = 0;
+            const callback = () => ticked++;
+            testee.on(EventType.CertificateChanged, callback);
+            testee.off(EventType.CertificateChanged, callback);
+            await delay(100);
+
+            expect(ticked).toBe(0);
+        });
+    });
 
     describe('getImageURL(...)', () => {
 
@@ -83,11 +156,11 @@ class TestFixture {
 
     public readonly configurationMock = mock<IRemoteControllerConfiguration>();
 
-    public createTestee(imageServer: string, tokenKey: Uint8Array, tokenCheckEnabled: boolean): RemoteController {
+    public createTestee(imageServer: string, tokenKey: Uint8Array, tokenCheckEnabled: boolean, interval?: number): RemoteController {
         Object.defineProperty(this.configurationMock, 'imageServer', { get: () => imageServer });
         Object.defineProperty(this.configurationMock, 'tokenKey', { get: () => tokenKey });
         Object.defineProperty(this.configurationMock, 'tokenCheckEnabled', { get: () => tokenCheckEnabled });
-        return new RemoteController(this.configurationMock);
+        return new RemoteController(this.configurationMock, interval);
     }
 }
 
