@@ -1,16 +1,16 @@
 import { URL } from 'url';
 import { ParameterizedContext } from 'koa';
-import { IRemoteController } from '../RemoteController';
+import { ITokenValidator } from '../RemoteController';
 
 // => https://regex101.com/r/Ud3WDm/3
 const pathTestPattern = /^(?:\/[_\-=%a-zA-Z0-9]+)?\/data(?:-saver)?\/[a-fA-F0-9]+\/[^/?#\s]+$/;
 
 export class RequestValidator {
 
-    private readonly _remoteController: IRemoteController;
+    private readonly _tokenValidator: ITokenValidator;
 
-    constructor(remoteController: IRemoteController) {
-        this._remoteController = remoteController;
+    constructor(tokenValidator: ITokenValidator) {
+        this._tokenValidator = tokenValidator;
     }
 
     private _verifyHost(hostname: string): boolean {
@@ -26,18 +26,7 @@ export class RequestValidator {
     }
 
     private _verifyToken(pathname: string): boolean {
-        if(this._remoteController.shouldCheckToken(pathname)) {
-            try {
-                const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
-                const data = this._remoteController.decryptToken(token);
-                const chapter = decodeURI(pathname.split('/').slice(-2).shift());
-                return new Date(data.expires) > new Date() && data.hash === chapter;
-            } catch(error) {
-                return false;
-            }
-        } else {
-            return true;
-        }
+        return this._tokenValidator.verifyToken(pathname);
     }
 
     private _verify(ctx: ParameterizedContext): boolean {

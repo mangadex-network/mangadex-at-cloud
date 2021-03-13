@@ -5,7 +5,7 @@ import { ExceptionCatcher } from './handlers/ExceptionCatcher';
 import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
 import { RequestValidator } from './handlers/RequestValidator';
 import { CreateCacheProvider } from './handlers/ImageProvider';
-import { IRemoteController } from './RemoteController';
+import { RemoteController } from './RemoteController';
 
 interface IClientService {
     start(cache: string, size: number): Promise<void>;
@@ -14,24 +14,12 @@ interface IClientService {
 
 export class ClientService implements IClientService {
 
-    private readonly _remoteController: IRemoteController;
+    private readonly _remoteController: RemoteController;
     private _service: https.Server;
-    private _keepAliveTimer: NodeJS.Timeout;
 
-    constructor(remoteController: IRemoteController) {
+    constructor(remoteController: RemoteController) {
         this._remoteController = remoteController;
         this._service
-    }
-
-    private async _keepAliveTask() {
-        try {
-            const options = await this._remoteController.ping();
-            // TODO: update certificate when changed ...
-            //this._service.setSecureContext(options);
-            //console.info('Updated client SSL certificate');
-        } catch(error) {
-            console.warn('An unexpected Error occured during Configuration Update:', error);
-        }
     }
 
     public async start(cache: string, size: number) {
@@ -49,7 +37,6 @@ export class ClientService implements IClientService {
             }
         });
         let options = await this._remoteController.connect();
-        this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
         this._service = https.createServer(options, app.callback());
         this._service.listen(options.port, options.hostname, () => {
             console.log(`Started HTTPS Server ${options.hostname}:${options.port}`);
@@ -57,7 +44,6 @@ export class ClientService implements IClientService {
     }
 
     public async stop(wait: number) {
-        clearInterval(this._keepAliveTimer);
         await this._remoteController.disconnect();
         await delay(wait);
         this._service.close(error => {});

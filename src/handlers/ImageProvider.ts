@@ -4,28 +4,28 @@ import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
 import { ParameterizedContext } from 'koa';
 import fetch, { Request } from 'node-fetch-lite';
-import { IRemoteController } from '../RemoteController';
+import { IUpstreamProvider } from '../RemoteController';
 import { ClientIdentifier } from '../RemoteControllerConfiguration';
 
-export function CreateCacheProvider(remoteController: IRemoteController, cache: string, size: number): ImageProvider {
+export function CreateCacheProvider(upstreamProvider: IUpstreamProvider, cache: string, size: number): ImageProvider {
     if(/^https?:/.test(cache)) {
-        return new CloudCacheImageProvider(remoteController, cache);
+        return new CloudCacheImageProvider(upstreamProvider, cache);
     }
     try {
         fs.ensureDirSync(cache || null);
-        return new FileCacheImageProvider(remoteController, cache, size);
+        return new FileCacheImageProvider(upstreamProvider, cache, size);
     } catch(error) {}
 
     console.warn(`The parameter '${cache}' is not valid for any of the supported cache providers, images will not be cached!`);
-    return new ImageProvider(remoteController);
+    return new ImageProvider(upstreamProvider);
 }
 
 class ImageProvider {
 
-    protected readonly _remoteController: IRemoteController;
+    protected readonly _upstreamProvider: IUpstreamProvider;
 
-    constructor(remoteController: IRemoteController) {
-        this._remoteController = remoteController;
+    constructor(upstreamProvider: IUpstreamProvider) {
+        this._upstreamProvider = upstreamProvider;
     }
 
     protected async _tryStreamResponseFromCache(_upstreamURI: URL, _ctx: ParameterizedContext): Promise<boolean> {
@@ -77,7 +77,7 @@ class ImageProvider {
         ctx.set('Cache-Control', 'public/ max-age=1209600');
         ctx.set('Timing-Allow-Origin', 'https://mangadex.org');
         ctx.set('X-Content-Type-Options', 'nosniff');
-        const upstreamURI = this._remoteController.getImageURL(ctx.URL.pathname);
+        const upstreamURI = this._upstreamProvider.getImageURL(ctx.URL.pathname);
         if(await this._tryStreamResponseFromCache(upstreamURI, ctx)) {
             return;
         }
@@ -100,8 +100,8 @@ class CloudCacheImageProvider extends ImageProvider {
 
     private _originCDN: string;
 
-    constructor(remoteController: IRemoteController, originCDN: string) {
-        super(remoteController);
+    constructor(upstreamProvider: IUpstreamProvider, originCDN: string) {
+        super(upstreamProvider);
         this._originCDN = originCDN;
     }
 
@@ -140,8 +140,8 @@ export class FileCacheImageProvider extends ImageProvider {
     private readonly _cacheLimit: number;
     private readonly _leaseTime: number;
 
-    constructor(remoteController: IRemoteController, cacheDirectory: string, cacheLimit: number, leaseTime: number = 2635200) {
-        super(remoteController);
+    constructor(upstreamProvider: IUpstreamProvider, cacheDirectory: string, cacheLimit: number, leaseTime: number = 2635200) {
+        super(upstreamProvider);
         this._shardIndexFile = path.join(cacheDirectory, cacheShardIndexFileName);
         this._cacheDirectory = cacheDirectory;
         this._cacheLimit = cacheLimit;
