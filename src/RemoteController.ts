@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import { EventEmitter } from 'events';
 import nacl = require('tweetnacl');
 import fetch, { Request } from 'node-fetch-lite';
 import { ListenOptionsTls } from './deps';
@@ -12,28 +13,33 @@ export interface IUpstreamProvider {
     getImageURL(pathname: string): URL;
 }
 
+export enum EventType {
+    CertificateChanged = 'cert'
+}
+
 export interface IRemoteController {
     connect(): Promise<ListenOptionsTls>;
     disconnect(): Promise<void>;
 }
 
-export class RemoteController implements IRemoteController, ITokenValidator, IUpstreamProvider {
+export class RemoteController extends EventEmitter implements IRemoteController, ITokenValidator, IUpstreamProvider {
 
     private readonly _configuration: IRemoteControllerConfiguration;
     private _keepAliveTimer: NodeJS.Timeout = null;
     private _isConnected: boolean = false;
 
     constructor(configuration: IRemoteControllerConfiguration) {
+        super();
         this._configuration = configuration;
     }
 
     private async _keepAliveTask() {
         try {
-            const options = await this._ping();
-            // TODO: send event to subscribers when certain options changed (e.g. ssl cert)
-            // this._configuration.clientOptions.cert;
-            //this._service.setSecureContext(options);
-            //console.info('Updated client SSL certificate');
+            const cert = this._configuration.clientOptions.cert;
+            await this._ping();
+            if(cert !== this._configuration.clientOptions.cert) {
+                this.emit(EventType.CertificateChanged, this._configuration.clientOptions.cert);
+            }
         } catch(error) {
             console.warn('An unexpected Error occured during Configuration Update:', error);
         }
@@ -45,7 +51,8 @@ export class RemoteController implements IRemoteController, ITokenValidator, IUp
         } else {
             this._isConnected = true;
             this._keepAliveTimer = setInterval(this._keepAliveTask.bind(this), 60000);
-            return this._ping();
+            await this._ping();
+            return this._configuration.clientOptions;
         }
     }
 
@@ -74,7 +81,7 @@ export class RemoteController implements IRemoteController, ITokenValidator, IUp
         }
     }
 
-    private async _ping(): Promise<ListenOptionsTls> {
+    private async _ping(): Promise<void> {
         let uri = new URL('/ping', this._configuration.controlServer);
         const payload = this._configuration.createPingRequestPayload();
         const request = new Request(uri.href, {
@@ -92,7 +99,6 @@ export class RemoteController implements IRemoteController, ITokenValidator, IUp
         await this._configuration.parsePingResponsePayload(data);
         console.info('[RESPONSE From: RPC]', '<=', response.ok, response.status);
         console.debug('RemoteController.ping()', '<=', response.status, data);
-        return this._configuration.clientOptions;
     }
 
     public getImageURL(pathname: string): URL {

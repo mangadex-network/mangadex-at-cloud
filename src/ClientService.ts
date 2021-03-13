@@ -1,11 +1,12 @@
 import * as Koa from 'koa';
 import * as https from 'https';
+import { SecureContextOptions } from 'node:tls';
 import { delay } from './deps';
 import { ExceptionCatcher } from './handlers/ExceptionCatcher';
 import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
 import { RequestValidator } from './handlers/RequestValidator';
 import { CreateCacheProvider } from './handlers/ImageProvider';
-import { RemoteController } from './RemoteController';
+import { EventType, RemoteController } from './RemoteController';
 
 interface IClientService {
     start(cache: string, size: number): Promise<void>;
@@ -41,11 +42,18 @@ export class ClientService implements IClientService {
         this._service.listen(options.port, options.hostname, () => {
             console.log(`Started HTTPS Server ${options.hostname}:${options.port}`);
         });
+        this._remoteController.on(EventType.CertificateChanged, this.updateSSL.bind(this));
     }
 
     public async stop(wait: number) {
+        this._remoteController.off(EventType.CertificateChanged, this.updateSSL);
         await this._remoteController.disconnect();
         await delay(wait);
         this._service.close(error => {});
+    }
+
+    private updateSSL(options: SecureContextOptions): void {
+        this._service.setSecureContext(options);
+        console.info('Updated client SSL certificate:', options.cert);
     }
 }
