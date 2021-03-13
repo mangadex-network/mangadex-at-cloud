@@ -2,8 +2,8 @@ import { URL } from 'url';
 import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
-const CLIENT_VERSION = '2.0.0-rc14'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
-const CLIENT_BUILD = 29; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
+const CLIENT_VERSION = '2.0.0'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
+const CLIENT_BUILD = 30; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
 export const ClientIdentifier = `MangaDex@Home Node ${CLIENT_VERSION} (${CLIENT_BUILD})`;
 
 interface IStopRequestPayload {
@@ -51,8 +51,9 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private readonly _diskspace: number; // in Byte, must be larger than 60 * 1024 * 1024 * 1024
     private readonly _networkspeed: number; // in KB/sec, use 0 for unmetered (use server side maximum)
     private readonly _controlServer: string = CONTROL_SERVER;
-    
+
     private _hostname: string = 'localhost';
+    private _ip: string;
     private _port: number;
     private _imageServer: string = '';
     private _tlsCreationTime?: string;
@@ -61,8 +62,9 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
     private _tokenKey?: Uint8Array;
     private _tokenCheckEnabled: boolean;
 
-    constructor(secret: string, port: number, diskspace: number, networkspeed?: number) {
+    constructor(secret: string, ip: string, port: number, diskspace: number, networkspeed: number) {
         this._secret = secret;
+        this._ip = ip || null;
         this._port = port;
         this._diskspace = Math.max(diskspace, 85899345920); // minimum => 80 GB
         this._networkspeed = networkspeed || 0;
@@ -104,6 +106,7 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
         const payload = {
             secret: this._secret,
             port: this._port,
+            ip_address: this._ip || '',
             disk_space: this._diskspace,
             network_speed: this._networkspeed,
             build_version: CLIENT_BUILD

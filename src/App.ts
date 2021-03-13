@@ -22,7 +22,7 @@ const argv = yargs/*
         nargs: 1
     })
     .option('ip', {
-        alias: 'h',
+        alias: 'i',
         describe: 'The IP address reported to the mangadex control server to assign a .mangadex.network subdomain and forward image requests from the website. When no IP address is provided, the mangadex control server will use the client\'s public determined IP address.',
         default: '',
         type: 'string',
@@ -65,8 +65,8 @@ const argv = yargs/*
     })
     .argv;
 
-argv.size = argv.size * 1073741824;
-argv.throttle = argv.throttle * 131072;
+argv.size = argv.size * 1024 * 1024 * 1024;
+argv.throttle = argv.throttle * 1024 * 1024 / 8;
 LogInit({
     error: LogLevel.Error,
     warn: LogLevel.Warning,
@@ -86,7 +86,7 @@ async function onInterrupt(callback: () => Promise<void>, timeout: number) {
 }
 
 (async function main() {
-    const configuration = new RemoteControllerConfiguration(argv.key, argv.port, argv.size, 0);
+    const configuration = new RemoteControllerConfiguration(argv.key, argv.ip, argv.port, argv.size, argv.throttle);
     const client = new ClientService(new RemoteController(configuration));
     process.on('SIGINT', () => onInterrupt(async () => client.stop(25000), 30000));
     await client.start(argv.cache, argv.size);
