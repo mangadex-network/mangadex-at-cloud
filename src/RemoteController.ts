@@ -6,7 +6,7 @@ import { ListenOptionsTls } from './deps';
 import { ClientIdentifier, IRemoteControllerConfiguration } from './RemoteControllerConfiguration';
 
 export interface ITokenValidator {
-    verifyToken(pathname: string): boolean;
+    verifyToken(chapter: string, token: string): boolean;
 }
 
 export interface IUpstreamProvider {
@@ -103,18 +103,12 @@ export class RemoteController extends EventEmitter implements IRemoteController,
         return new URL(pathname.replace(/.*\/data/, '/data'), this._configuration.imageServer);
     }
 
-    private _decryptToken(token: string): { expires: string, hash: string } {
-        const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
-        const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
-        return JSON.parse(Buffer.from(decrypted).toString('utf8'));
-    }
-
-    public verifyToken(pathname: string): boolean {
+    public verifyToken(chapter: string, token: string): boolean {
         if(this._configuration.tokenCheckEnabled) {
             try {
-                const token = decodeURI(pathname.split('/').slice(-4).shift() || '');
-                const data = this._decryptToken(token);
-                const chapter = decodeURI(pathname.split('/').slice(-2).shift());
+                const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
+                const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
+                const data = JSON.parse(Buffer.from(decrypted).toString('utf8'));
                 return new Date(data.expires) > new Date() && data.hash === chapter;
             } catch(error) {
                 return false;

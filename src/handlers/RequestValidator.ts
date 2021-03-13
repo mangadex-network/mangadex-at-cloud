@@ -26,7 +26,10 @@ export class RequestValidator {
     }
 
     private _verifyToken(pathname: string): boolean {
-        return this._tokenValidator.verifyToken(pathname);
+        const parts = pathname.split('/');
+        const token = decodeURI(parts.slice(-4).shift() || '');
+        const chapter = decodeURI(parts.slice(-2).shift());
+        return this._tokenValidator.verifyToken(chapter, token);
     }
 
     private _verify(ctx: ParameterizedContext): boolean {
