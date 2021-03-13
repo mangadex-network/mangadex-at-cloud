@@ -121,13 +121,13 @@ export class RemoteControllerConfiguration implements IRemoteControllerConfigura
 
     public parsePingResponsePayload(data: IPingResponsePayload): void {
         if(data.paused) {
-            console.warn(`The client is marked as paused and will no longer receive requests! Check if the key has been changed and try restarting the client.`);
+            console.warn(`The client is marked as paused and will no longer receive requests! Contact a member of MangaDex@Home staff for further information!`);
         }
         if(data.compromised) {
-            console.warn(`The client is marked as compromised and will no longer receive requests! Check if the key has been changed and try restarting the client.`);
+            console.warn(`The client is marked as compromised and will no longer receive requests! Contact a member of MangaDex@Home staff for further information!`);
         }
         if(data.latest_build > CLIENT_BUILD) {
-            console.warn(`Your current client build ${CLIENT_BUILD} does not match the latest build ${data.latest_build}. Please check if an updated client is available!`);
+            console.warn(`Your current client build ${CLIENT_BUILD} is lower than the latest build ${data.latest_build}. Check if an updated client is available!`);
         }
 
         const uri = new URL(data.url);
