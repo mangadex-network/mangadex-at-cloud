@@ -16,15 +16,30 @@ const cache = {
     //location: 'https://s5.mangadex.cf'
 };
 
-const configurationMock = new RemoteControllerConfiguration(null, 44300, cache.size, 0);
-configurationMock._tlsCert = fs.readFileSync('./test/localhost.crt').toString('utf8');
-configurationMock._tlsKey = fs.readFileSync('./test/localhost.key').toString('utf8');
-configurationMock._imageServer = 'https://s5.mangadex.org';
+class RemoteControllerConfigurationMock extends RemoteControllerConfiguration {
+    constructor() {
+        super(null, null, 44300, cache.size, 0, 0);
+        super._tlsCert = fs.readFileSync('./test/localhost.crt').toString('utf8');
+        super._tlsKey = fs.readFileSync('./test/localhost.key').toString('utf8');
+        super._imageServer = 'https://s5.mangadex.org';
+    }
+}
 
-const rpcMock = new RemoteController(configurationMock);
-rpcMock.connect = () => Promise.resolve(configurationMock.clientOptions);
-rpcMock.ping = () => Promise.resolve(configurationMock.clientOptions);
-rpcMock.disconnect = () => Promise.resolve({});
+class RemoteControllerMock extends RemoteController {
+    constructor(configuration) {
+        super(configuration);
+    }
+    async _ping() {
+        return Promise.resolve();
+    }
+    async connect() {
+        console.log(this._configuration.clientOptions);
+        return Promise.resolve(this._configuration.clientOptions);
+    }
+    async disconnect() {
+        return Promise.resolve();
+    }
+}
 
 if(cluster.isMaster) {
     console.log(`Using ${workers} for this machine`);
@@ -42,7 +57,9 @@ if(cluster.isMaster) {
         cluster.fork();
     });
 } else {
-    const client = new ClientService(rpcMock);
+    const configMock = new RemoteControllerConfigurationMock();
+    const remoteMock = new RemoteControllerMock(configMock);
+    const client = new ClientService(remoteMock);
     client.start(cache.location, cache.size);
 }
 
