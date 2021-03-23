@@ -18,7 +18,7 @@ The cloud CDN mode is very convenient in combination with some cheap VPS provide
 
 In order to use this client for cloud caching instead of local caching, a CDN such as CloudFlare is required.
 It is possible to use the official image servers directly, but this would obviously defeat the purpose of caching at all.
-The basic idea is to setup a domain such as **cdn.mangadex-network.cf** and configure it for any cloud CDN provider as CNAME for the current upstream server **reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network**, **s2.mangadex.org** or **s5.mangadex.org**.
+The basic idea is to setup a domain such as **cdn.mangadex-network.cf** and configure it for any cloud CDN provider as CNAME for the current upstream server **[reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network](https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/8172a46adc798f4f4ace6663322a383e/B18.png)**, **[s2.mangadex.org](https://s2.mangadex.org/data/8172a46adc798f4f4ace6663322a383e/B18.png)** or **[s5.mangadex.org](https://s5.mangadex.org/data/8172a46adc798f4f4ace6663322a383e/B18.png)**.
 
 **TIP:** At the time of writing, free domains are available at [freenom](https://www.freenom.com)
 
