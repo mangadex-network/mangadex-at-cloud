@@ -1,7 +1,7 @@
 {
   "name": "@mangadex/cloud",
   "description": "This is a NodeJS based custom implementation of the MangaDex@Home client.",
-  "version": "2.0.0-build.3",
+  "version": "2.0.0-build.4",
   "license": "Unlicense",
   "repository": {
     "type": "git",
