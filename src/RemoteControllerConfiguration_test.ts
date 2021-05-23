@@ -21,7 +21,7 @@ describe('RemoteControllerConfiguration', () => {
             expect(actual.disk_space).toBe(85_899_345_920); // spoofed min. disk space required by mangadex
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBeUndefined();
-            expect(actual.build_version).toBe(30);
+            expect(actual.build_version).toBe(31);
         });
 
         it('Should provide client configuration from ping response', async () => {
@@ -57,7 +57,7 @@ describe('RemoteControllerConfiguration', () => {
             expect(actual.disk_space).toBe(100_000_000_000);
             expect(actual.network_speed).toBe(10_000_000);
             expect(actual.tls_created_at).toBe('TestTimeTLS');
-            expect(actual.build_version).toBe(30);
+            expect(actual.build_version).toBe(31);
         });
 
         it('Should create valid stop request', async () => {
