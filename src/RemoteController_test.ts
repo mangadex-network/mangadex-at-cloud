@@ -31,7 +31,7 @@ describe('RemoteController', () => {
 
         it.skip('Should be raised when changed certificate', async () => {
             const fixture = new TestFixture();
-            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, 25);
 
             // mock fetch to return a random cert on each request, e.g. Date.now().toString(16) or new Date().toISOString()
             // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
@@ -46,7 +46,7 @@ describe('RemoteController', () => {
 
         it.skip('Should not be raised when same certificate', async () => {
             const fixture = new TestFixture();
-            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, 25);
 
             // mock fetch to return the same cert on each request
             // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
@@ -64,7 +64,7 @@ describe('RemoteController', () => {
 
         it.skip('Should not be raised when changed certificate', async () => {
             const fixture = new TestFixture();
-            const testee = fixture.createTestee('https://cdn.mangadex.org', null, false, 25);
+            const testee = fixture.createTestee('https://cdn.mangadex.org', null, 25);
 
             // mock fetch to return a random cert on each request, e.g. Date.now().toString(16) or new Date().toISOString()
             // fetch.mockReturnValue(Promise.resolve(new Response('{}')));
@@ -83,7 +83,7 @@ describe('RemoteController', () => {
 
         it('Should reduce path with "/data" part', async () => {
             const fixture = new TestFixture();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', null);
             expect(testee.getImageURL('/data/chapter/image.png').href).toBe('https://cdn.mangadex.org/data/chapter/image.png');
             expect(testee.getImageURL('/data-saver/chapter/image.png').href).toBe('https://cdn.mangadex.org/data-saver/chapter/image.png');
             expect(testee.getImageURL('/token/data/chapter/image.png').href).toBe('https://cdn.mangadex.org/data/chapter/image.png');
@@ -92,7 +92,7 @@ describe('RemoteController', () => {
 
         it('Should keep path without "/data" part', async () => {
             const fixture = new TestFixture();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', null);
             expect(testee.getImageURL('/').href).toBe('https://cdn.mangadex.org/');
             expect(testee.getImageURL('/foo/bar').href).toBe('https://cdn.mangadex.org/foo/bar');
             expect(testee.getImageURL('/foo/bar/chapter/image.png').href).toBe('https://cdn.mangadex.org/foo/bar/chapter/image.png');
@@ -105,48 +105,35 @@ describe('RemoteController', () => {
         it('Should accept valid token when token verification is enabled', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
             expect(testee.verifyToken('af09', nacl.validToken)).toBe(true);
-        });
-
-        it('Should accept valid token when token verification is disabled', async () => {
-            const fixture = new TestFixture();
-            const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, false);
-            expect(testee.verifyToken('af09', nacl.validToken)).toBe(true);
-        });
-
-        it('Should accept invalid token when token verification is disabled', async () => {
-            const fixture = new TestFixture();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', null, false);
-            expect(testee.verifyToken('', '')).toBe(true);
         });
 
         it('Should reject empty chapter hash', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
             expect(testee.verifyToken('', nacl.validToken)).toBe(false);
         });
 
         it('Should reject non-matching chapter hash', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
             expect(testee.verifyToken('09af', nacl.validToken)).toBe(false);
         });
 
         it('Should reject empty token', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
             expect(testee.verifyToken('af09', '')).toBe(false);
         });
 
         it('Should reject expired token', async () => {
             const fixture = new TestFixture();
             const nacl = new NaclMock();
-            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key, true);
+            let testee = fixture.createTestee('https://cdn.mangadex.org', nacl.key);
             expect(testee.verifyToken('af09', nacl.expiredToken)).toBe(false);
         });
     });
@@ -156,10 +143,9 @@ class TestFixture {
 
     public readonly configurationMock = mock<IRemoteControllerConfiguration>();
 
-    public createTestee(imageServer: string, tokenKey: Uint8Array, tokenCheckEnabled: boolean, interval?: number): RemoteController {
+    public createTestee(imageServer: string, tokenKey: Uint8Array, interval?: number): RemoteController {
         Object.defineProperty(this.configurationMock, 'imageServer', { get: () => imageServer });
         Object.defineProperty(this.configurationMock, 'tokenKey', { get: () => tokenKey });
-        Object.defineProperty(this.configurationMock, 'tokenCheckEnabled', { get: () => tokenCheckEnabled });
         return new RemoteController(this.configurationMock, interval);
     }
 }

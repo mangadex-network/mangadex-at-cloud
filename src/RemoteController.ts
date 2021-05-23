@@ -106,17 +106,13 @@ export class RemoteController extends EventEmitter implements IRemoteController,
     }
 
     public verifyToken(chapter: string, token: string): boolean {
-        if(this._configuration.tokenCheckEnabled) {
-            try {
-                const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
-                const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
-                const data = JSON.parse(Buffer.from(decrypted).toString('utf8'));
-                return new Date(data.expires) > new Date() && data.hash === chapter;
-            } catch(error) {
-                return false;
-            }
-        } else {
-            return true;
+        try {
+            const decoded = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64') as Uint8Array;
+            const decrypted = nacl.secretbox.open(decoded.slice(24), decoded.slice(0, 24), this._configuration.tokenKey);
+            const data = JSON.parse(Buffer.from(decrypted).toString('utf8'));
+            return new Date(data.expires) > new Date() && data.hash === chapter;
+        } catch(error) {
+            return false;
         }
     }
 }

@@ -88,41 +88,5 @@ describe('RemoteControllerConfiguration', () => {
             expect(testee.tokenKey.length).toBe(32);
             expect(testee.tokenKey.some(byte => byte > 0)).toBeFalsy();
         });
-
-        it('Should enable token check when not in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
-
-            const successorMock = mock<IPingResponsePayload>();
-            successorMock.url = 'https://foo.bar.mangadex.network';
-            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
-            successorMock.disable_tokens = undefined;
-            testee.parsePingResponsePayload(successorMock);
-
-            expect(testee.tokenCheckEnabled).toBe(true);
-        });
-
-        it('Should enable token check when not disabled in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
-
-            const successorMock = mock<IPingResponsePayload>();
-            successorMock.url = 'https://foo.bar.mangadex.network';
-            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
-            successorMock.disable_tokens = false;
-            testee.parsePingResponsePayload(successorMock);
-
-            expect(testee.tokenCheckEnabled).toBe(true);
-        });
-
-        it('Should not enable token check when disabled in ping response', async () => {
-            let testee = new RemoteControllerConfiguration('', '', 0, 0, 0);
-
-            const successorMock = mock<IPingResponsePayload>();
-            successorMock.url = 'https://foo.bar.mangadex.network';
-            successorMock.token_key = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
-            successorMock.disable_tokens = true;
-            testee.parsePingResponsePayload(successorMock);
-
-            expect(testee.tokenCheckEnabled).toBe(false);
-        });
     });
 });
