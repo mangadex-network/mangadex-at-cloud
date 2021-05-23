@@ -2,6 +2,7 @@ import { URL } from 'url';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as crypto from 'crypto';
+import * as stream from 'stream';
 import { ParameterizedContext } from 'koa';
 import fetch, { Request } from 'node-fetch-lite';
 import { IUpstreamProvider } from '../RemoteController';
@@ -296,8 +297,8 @@ export class FileCacheImageProvider extends ImageProvider {
             // NOTE: Force pause() on body stream to prevent pipe() from instantly starting consumption
             //       Reason: Wait for Koa to pipe body to the res stream as well: ctx.body.pipe(ctx.res)
             //       => https://github.com/koajs/koa/blob/master/lib/application.js#L267
-            ctx.body.pause();
-            ctx.body.pipe(fs.createWriteStream(identifier.path, { highWaterMark: 262144 }));
+            (ctx.body as stream.Readable).pause();
+            (ctx.body as stream.Readable).pipe(fs.createWriteStream(identifier.path, { highWaterMark: 262144 }));
             // immediately update shard size to bridge the gap until the next shard size update is performed
             const shard = this._shardIndex.get(identifier.shard);
             this._shardIndex.set(identifier.shard, {

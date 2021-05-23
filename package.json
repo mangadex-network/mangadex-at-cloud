@@ -17,16 +17,16 @@
     "/UNLICENSE"
   ],
   "dependencies": {
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^10.0.0",
     "koa": "^2.13.1",
     "node-fetch-lite": "^0.1.1",
     "tweetnacl": "^1.0.3",
-    "yargs": "^16.2.0"
+    "yargs": "^17.0.1"
   },
   "devDependencies": {
     "@types/fs-extra": "latest",
     "@types/jest": "latest",
-    "@types/koa": "^2.11.8",
+    "@types/koa": "^2.13.1",
     "@types/node": "latest",
     "@types/yargs": "latest",
     "jest": "latest",
