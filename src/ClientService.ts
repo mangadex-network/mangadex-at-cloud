@@ -1,6 +1,6 @@
 import * as Koa from 'koa';
 import * as https from 'https';
-import { SecureContextOptions } from 'node:tls';
+import { SecureContextOptions } from 'tls';
 import { delay } from './deps';
 import { ExceptionCatcher } from './handlers/ExceptionCatcher';
 import { ResponseTimeDecorator } from './handlers/ResponseTimeDecorator';
