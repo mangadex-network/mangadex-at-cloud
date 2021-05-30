@@ -83,7 +83,7 @@ npm run serve
 
 Sample Query with CURL:
 ```bash
-curl --insecure -H 'Host: localhost.mangadex.network' 'https://localhost:44300/data/46674605f17f6e5c77f6a094bf1adfd1/x2.jpg' -D /dev/stdout -o /tmp/image.jpg
+curl --insecure -H 'Host: localhost.mangadex.network' 'https://localhost:44300/data/8172a46adc798f4f4ace6663322a383e/B18-8ceda4f88ddf0b2474b1017b6a3c822ea60d61e454f7e99e34af2cf2c9037b84.png' -D /dev/stdout -o /tmp/image.jpg
 ```
 
 **TIP:** Consider that request validations for e.g. `Referer` or `Token` are still in place and can be tested as well
