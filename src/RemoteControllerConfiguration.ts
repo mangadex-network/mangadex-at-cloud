@@ -2,7 +2,7 @@ import { URL } from 'url';
 import { ListenOptionsTls } from './deps';
 
 const CONTROL_SERVER = 'https://api.mangadex.network';
-const CLIENT_VERSION = '2.0.0'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
+const CLIENT_VERSION = '2.0.1'; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/CHANGELOG.md
 const CLIENT_BUILD = 31; // => https://gitlab.com/mangadex-pub/mangadex_at_home/-/raw/master/src/main/kotlin/mdnet/Constants.kt
 export const ClientIdentifier = `MangaDex@Home Node ${CLIENT_VERSION} (${CLIENT_BUILD})`;
 

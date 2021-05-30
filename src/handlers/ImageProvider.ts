@@ -6,7 +6,6 @@ import * as stream from 'stream';
 import { ParameterizedContext } from 'koa';
 import fetch, { Request } from 'node-fetch-lite';
 import { IUpstreamProvider } from '../RemoteController';
-import { ClientIdentifier } from '../RemoteControllerConfiguration';
 
 export function CreateCacheProvider(upstreamProvider: IUpstreamProvider, cache: string, size: number): ImageProvider {
     if(/^https?:/.test(cache)) {
@@ -72,11 +71,10 @@ class ImageProvider {
     }
 
     private async _handler(ctx: ParameterizedContext, _next: () => Promise<void>) {
-        ctx.set('Server', ClientIdentifier);
-        ctx.set('Access-Control-Allow-Origin', 'https://mangadex.org');
+        ctx.set('Access-Control-Allow-Origin', '*');
         ctx.set('Access-Control-Expose-Headers', '*');
         ctx.set('Cache-Control', 'public/ max-age=1209600');
-        ctx.set('Timing-Allow-Origin', 'https://mangadex.org');
+        ctx.set('Timing-Allow-Origin', '*');
         ctx.set('X-Content-Type-Options', 'nosniff');
         const upstreamURI = this._upstreamProvider.getImageURL(ctx.URL.pathname);
         if(await this._tryStreamResponseFromCache(upstreamURI, ctx)) {
